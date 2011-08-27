@@ -1,9 +1,21 @@
 """Module to provide simple methods of managing devices based on configuration 
 files found in devices folder."""
 
+import device
+
 class DeviceFactory(object):
     """Provides methods to produce Device classes from configuration files."""
-    pass
+    def __init__(self, devicefolder):
+        self.dir = devicefolder
+
+    def genConfigTemplate(self):
+        """Generate a blank configuration file allowing users to add in 
+specific values of their device."""
+        pass
+
+    def constructDevice(self, filename):
+        """Read in device from string and construct a Device object"""
+        pass
 
 
 # define exceptions
