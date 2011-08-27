@@ -20,13 +20,13 @@ specific values of their device."""
 
 # define exceptions
 class FileNotFoundError(Exception):
-    def __init__(self, string):
-        self.msg = "Could not locate configuration file: {0}".format(string)
+    def __init__(self, filename):
+        self.msg = "Could not locate configuration file: {0}".format(filename)
     def __str__(self):
         return self.msg
 
 class ConfigFileError(Exception):
-    def __init__(self, string):
-        self.msg = "Malformed configuration file: {0}".format(string)
+    def __init__(self, filename):
+        self.msg = "Malformed configuration file: {0}".format(filename)
     def __str__(self):
         return self.msg
