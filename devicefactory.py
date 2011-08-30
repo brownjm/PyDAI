@@ -8,7 +8,7 @@ class DeviceFactory(object):
     def __init__(self, devicefolder):
         self.dir = devicefolder
 
-    def genConfigTemplate(self):
+    def genConfigTemplate(self, filename):
         """Generate a blank configuration file allowing users to add in 
 specific values of their device."""
         pass
