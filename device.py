@@ -20,7 +20,9 @@ import Queue
 import time, random
 
 class Device(object):
-    def __init__(self):
+    def __init__(self, attributeDict={}, commandDict={}):
+        self.attribute = attributeDict
+        self.command = commandDict
         self.CommandPool = Queue.Queue()
         self.CommandThread = ProcessThread(self)
 
