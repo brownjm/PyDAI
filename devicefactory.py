@@ -24,7 +24,7 @@ import device
 
 class DeviceFactory(object):
     """Provides methods to produce Device classes from configuration files."""
-    def __init__(self, devicefolder):
+    def __init__(self, devicefolder="devices"):
         self.dir = devicefolder
         self.devices = []
         self._updateDevList()
