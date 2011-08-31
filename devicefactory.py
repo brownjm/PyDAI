@@ -44,7 +44,40 @@ specific values of their device."""
 
     def constructDevice(self, filename):
         """Read in device from string and construct a Device object"""
-        pass
+        fn = os.path.join(self.dir, filename)
+        try:
+            with open(fn, "r") as f:
+                data = f.readlines()
+        except IOError:
+            raise FileNotFoundError(fn)
+
+        # remove unnecessary lines
+        lines = []
+        for line in data:
+            if not (line.startswith("#") or line.startswith("\n") or 
+                    line.startswith("@")):
+                lines.append(line.strip("\n"))
+        
+        # construct the dictionaries
+        attributeDict = {}
+        commandDict = {}
+        entry = []
+        for line in lines:
+            if "=" in line:
+                entry = line.split("=")
+                if len(entry) is not 2:
+                    raise ConfigFileError(fn, line)
+                attributeDict[entry[0]] = entry[1]
+
+            elif ":" in line:
+                entry = line.split(":")
+                if len(entry) is not 3:
+                    raise ConfigFileError(fn, line)
+                commandDict[entry[0]] = (entry[1], entry[2])
+            else:
+                raise ConfigFileError(fn, line)
+
+        return device.Device(attributeDict, commandDict)
 
 
 # define exceptions
@@ -55,11 +88,12 @@ class FileNotFoundError(Exception):
         return self.msg
 
 class ConfigFileError(Exception):
-    def __init__(self, filename):
-        self.msg = "Malformed configuration file: {0}".format(filename)
+    def __init__(self, filename, line=None):
+        self.msg = "Malformed configuration file: {0} {1}".format(filename, 
+                                                                  line)
     def __str__(self):
         return self.msg
 
 if __name__ == "__main__":
     df = DeviceFactory("devices")
-    df.genConfigTemplate("dev1")
+    dev = df.constructDevice("dev1")
