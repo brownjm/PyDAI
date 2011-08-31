@@ -15,6 +15,36 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import Queue
+from devicefactory import DeviceFactory
+from packet import Packet
+
 class DeviceManager(object):
     """Provides methods to handle installed devices."""
-    pass
+    def __init__(self, router):
+        self.DeviceList = dict()
+        self.Outbox = Queue.Queue()
+        self.Router = router
+        self.DevFac = DeviceFactory()
+
+    def addDevice(self, filename):
+        self.DeviceList[filename] = self.DevFac.constructDevice(filename)
+        self.DeviceList[filename].addDeviceManager(self)
+
+    def sendPacket(self, packet):
+        self.DeviceList[packet.Destination].addPacket(packet)
+
+    def sendResponse(self, packet):
+        self.Outbox.put(packet)
+        print packet.Source, packet.Data
+
+if __name__ == '__main__':
+    dm = DeviceManager(None)
+    dm.addDevice('Dev1')
+    dm.addDevice('Dev2')
+    dm.sendPacket(Packet('Dev1', 'User', 'Command1'))
+    dm.sendPacket(Packet('Dev1', 'User', 'Command2'))
+    dm.sendPacket(Packet('Dev1', 'User', 'Command3'))
+    dm.sendPacket(Packet('Dev2', 'User', 'Command1'))
+    dm.sendPacket(Packet('Dev2', 'User', 'Command2'))
+    dm.sendPacket(Packet('Dev2', 'User', 'Command3'))
