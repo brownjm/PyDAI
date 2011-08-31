@@ -1,6 +1,8 @@
 """Module to provide simple methods of managing devices based on configuration 
 files found in devices folder."""
 
+import os
+import shutil
 import device
 
 class DeviceFactory(object):
@@ -11,7 +13,7 @@ class DeviceFactory(object):
     def genConfigTemplate(self, filename):
         """Generate a blank configuration file allowing users to add in 
 specific values of their device."""
-        pass
+        shutil.copy("devicetemplate", os.path.join(self.dir, filename))
 
     def constructDevice(self, filename):
         """Read in device from string and construct a Device object"""
@@ -30,3 +32,7 @@ class ConfigFileError(Exception):
         self.msg = "Malformed configuration file: {0}".format(filename)
     def __str__(self):
         return self.msg
+
+if __name__ == "__main__":
+    df = DeviceFactory("devices")
+    df.genConfigTemplate("dev1")
