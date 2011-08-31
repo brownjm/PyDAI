@@ -3,10 +3,10 @@
 
 # Device Description
 @description
-NAME=""
-VENDOR=""
-MODEL=""
-SN=""
+NAME=
+VENDOR=
+MODEL=
+SN=
 
 # Device Commands
 # Commands have the following form:
