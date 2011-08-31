@@ -3,10 +3,10 @@
 
 # Device Description
 @description
-NAME="Retro Incabulator"
-VENDOR="Rockwell Automation"
-MODEL="Mark VII"
-SN="SN000001"
+NAME=""
+VENDOR=""
+MODEL=""
+SN=""
 
 # Device Commands
 # Commands have the following form:
