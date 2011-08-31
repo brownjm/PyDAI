@@ -1,0 +1,21 @@
+# Device configuration file template
+# Please fill in the information below for your device
+
+# Device Description
+@description
+NAME=Device 2
+VENDOR=DevFac
+MODEL=
+SN=SN0002
+
+# Device Commands
+# Commands have the following form:
+# UserDefinedName:ProtocolCommand:ReturnType
+@commands
+name:getName:string
+vendor:getVendor:string
+model:getModel:string
+sn:getSN:string
+
+data:getArrayData:array
+value:getFloatValue:float
