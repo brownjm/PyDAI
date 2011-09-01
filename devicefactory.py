@@ -88,9 +88,8 @@ class FileNotFoundError(Exception):
         return self.msg
 
 class ConfigFileError(Exception):
-    def __init__(self, filename, line=None):
-        self.msg = "Malformed configuration file: {0} {1}".format(filename, 
-                                                                  line)
+    def __init__(self, filename, line="Unknown"):
+        self.msg = "Malformed configuration file: {0} -> {1}".format(filename, line)
     def __str__(self):
         return self.msg
 
