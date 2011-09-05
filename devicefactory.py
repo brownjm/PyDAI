@@ -63,13 +63,13 @@ specific values of their device."""
         commandDict = {}
         entry = []
         for line in lines:
-            if "=" in line:
+            if "=" in line: # must be an attribute
                 entry = line.split("=")
                 if len(entry) is not 2:
                     raise ConfigFileError(fn, line)
                 attributeDict[entry[0]] = entry[1]
 
-            elif ":" in line:
+            elif ":" in line: # must be a command
                 entry = line.split(":")
                 if len(entry) is not 3:
                     raise ConfigFileError(fn, line)
@@ -77,6 +77,7 @@ specific values of their device."""
             else:
                 raise ConfigFileError(fn, line)
 
+        # create device from newly formed dictionaries
         return device.Device(attributeDict, commandDict)
 
 
