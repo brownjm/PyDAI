@@ -1,20 +1,20 @@
 # Device configuration file template
 # Please fill in the information below for your device
 
-# Device Description
-@description
+# Device Attributes
+# Attributes have the following form
+# ATTRIBUTE=Value
+@attributes
 NAME=
 VENDOR=
 MODEL=
 SN=
 
 # Device Commands
-# Commands have the following form:
+# Commands have the following form
 # UserDefinedName:ProtocolCommand:ReturnType
 @commands
 name:getName:string
 vendor:getVendor:string
 model:getModel:string
 sn:getSN:string
-
-data:getStringData:string

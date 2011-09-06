@@ -1,20 +1,20 @@
 # Device configuration file template
 # Please fill in the information below for your device
 
-# Device Description
-@description
-NAME=Retro Incabulator
-VENDOR=Rockwell Automation
-MODEL=Mark VII
-SN=SN000001
+# Device Attributes
+# Attributes have the following form
+# ATTRIBUTE=Value
+@attributes
+NAME=Device 1
+VENDOR=DevFac
+MODEL=Simulator
+SN=0001
 
 # Device Commands
-# Commands have the following form:
+# Commands have the following form
 # UserDefinedName:ProtocolCommand:ReturnType
 @commands
 name:getName:string
 vendor:getVendor:string
 model:getModel:string
 sn:getSN:string
-
-data:getStringData:string
