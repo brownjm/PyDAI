@@ -18,18 +18,23 @@
 import threading
 import Queue
 import time, random
+import protocol
 
 class Device(object):
-    def __init__(self, attributeDict={}, commandDict={}):
+    def __init__(self, attributeDict, commandDict={}):
         self.attribute = attributeDict
         self.command = commandDict
-        self.CommandPool = Queue.Queue()
-        self.CommandThread = ProcessThread(self)
+        self.commandPool = Queue.Queue()
+        self.commandThread = ProcessThread(self)
+        self.protocol = protocol.Protocol(attributeDict)
 
-    def addCommand(self, command):
-        self.CommandPool.put(command)
-        if not self.CommandThread.isAlive():
-            self.CommandThread.start()
+    def read(self):
+        pass
+
+    def write(self, packet):
+        self.commandPool.put(packet.data)
+        if not self.commandThread.isAlive():
+            self.commandThread.start()
 
 class ProcessThread(threading.Thread):
     def __init__(self, device):
@@ -37,21 +42,22 @@ class ProcessThread(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
-        while not self.device.CommandPool.empty():
-            command = self.device.CommandPool.get()
+        while not self.device.commandPool.empty():
+            command = self.device.commandPool.get()
             #Do something with command here!
             #Receive response from device and send back up chain.
-            time.sleep(random.randint(1,5))
-            print command            
+            if not self.device.protocol.isOpen():
+                self.device.protocol.open()
+            self.device.protocol.write(command)
 
 if __name__ == '__main__':
-    d = Device()
-    d.addCommand("Command1 Dev1")
-    d.addCommand("Command2 Dev1")
-    d.addCommand("Command3 Dev1")
+    d = Device({"PROTOCOL": "simulated"})
+    d.write("Command1 Dev1")
+    d.write("Command2 Dev1")
+    d.write("Command3 Dev1")
 
-    a = Device()
-    a.addCommand("Command1 Dev2")
-    a.addCommand("Command2 Dev2")
-    a.addCommand("Command3 Dev2")
+    a = Device({"PROTOCOL": "simulated"})
+    a.write("Command1 Dev2")
+    a.write("Command2 Dev2")
+    a.write("Command3 Dev2")
 
