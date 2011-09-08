@@ -17,11 +17,77 @@
 
 """Module containing various communication protocols."""
 
+from collections import deque
+
 class Protocol(object):
-    pass
+    """Wrapper class to provide common interface for all communication 
+protocols"""
+    def __init__(self, name="simulated"):
+        if name in available:
+            self.name = name
+        else:
+            raise IOError("{0} not implemented yet".format(name))
 
-class TCPIP(Protocol):
-    pass
+    def config(self, **kwargs):
+        """Create and configure backend device"""
+        self.backend = available[self.name](**kwargs)
 
-class USB(Protocol):
-    pass
+    def open(self):
+        """Open connection to backend"""
+        self.backend.open()
+
+    def isOpen(self):
+        """Returns whether backend is open (True) or closed (False)"""
+        return self.backend.isOpen()
+
+    def close(self):
+        """Close connection to backend"""
+        self.backend.close()
+
+    def read(self):
+        """Read from backend buffer"""
+        return self.backend.read()
+
+    def write(self, string):
+        """Write to backend buffer"""
+        if isinstance(string, str):
+            self.backend.write(string)
+        else:
+            raise TypeError("{0} is not a string".format(string))
+
+
+class Simulated(object):
+    """Simulated communication with buffer which echos back commands"""
+    def __init__(self, **kwargs):
+        self.buffer = deque()
+        self.status = False
+
+    def open(self):
+        self.status = True
+
+    def isOpen(self):
+        return self.status
+
+    def close(self):
+        self.status = False
+
+    def write(self, string):
+        if self.isOpen():
+            self.buffer.append(string)
+        else:
+            raise IOError("Protocol not open")
+
+    def read(self):
+        if self.isOpen():
+            return self.buffer.popleft()
+        else:
+            raise IOError("Protocol not open")
+        
+
+# available protocols
+available = {"simulated" : Simulated}
+
+if __name__ == "__main__":
+    p = Protocol("simulated")
+    p.config()
+    p.open()
