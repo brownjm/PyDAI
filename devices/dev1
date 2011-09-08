@@ -9,6 +9,7 @@ NAME=Device 1
 VENDOR=DevFac
 MODEL=Simulator
 SN=0001
+PROTOCOL=simulated
 
 # Device Commands
 # Commands have the following form

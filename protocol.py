@@ -22,15 +22,15 @@ from collections import deque
 class Protocol(object):
     """Wrapper class to provide common interface for all communication 
 protocols"""
-    def __init__(self, name="simulated"):
-        if name in available:
-            self.name = name
+    def __init__(self, attributeDict):
+        if attributeDict["PROTOCOL"] in available: # check if implemented
+            self._config(attributeDict)
         else:
-            raise IOError("{0} not implemented yet".format(name))
+            raise IOError("{0} not implemented yet".format(attributeDict["PROTOCOL"]))
 
-    def config(self, **kwargs):
+    def _config(self, attributeDict):
         """Create and configure backend device"""
-        self.backend = available[self.name](**kwargs)
+        self.backend = available[attributeDict["PROTOCOL"]](attributeDict)
 
     def open(self):
         """Open connection to backend"""
@@ -48,17 +48,14 @@ protocols"""
         """Read from backend buffer"""
         return self.backend.read()
 
-    def write(self, string):
+    def write(self, message):
         """Write to backend buffer"""
-        if isinstance(string, str):
-            self.backend.write(string)
-        else:
-            raise TypeError("{0} is not a string".format(string))
+        self.backend.write(message)
 
 
 class Simulated(object):
     """Simulated communication with buffer which echos back commands"""
-    def __init__(self, **kwargs):
+    def __init__(self, attributeDict):
         self.buffer = deque()
         self.status = False
 
@@ -79,15 +76,27 @@ class Simulated(object):
 
     def read(self):
         if self.isOpen():
-            return self.buffer.popleft()
+            try:
+                return self.buffer.popleft()
+            except IndexError:
+                raise EmptyBufferError(self.buffer)
+                
         else:
             raise IOError("Protocol not open")
         
+
+class EmptyBufferError(Exception):
+    def __init__(self, buffername):
+        self.msg = "Nothing to read from empty buffer: {0}".format(buffername)
+
+    def __str__(self):
+        return self.msg
+
 
 # available protocols
 available = {"simulated" : Simulated}
 
 if __name__ == "__main__":
-    p = Protocol("simulated")
-    p.config()
+    attributeDict = {"PROTOCOL":"simulated"}
+    p = Protocol(attributeDict)
     p.open()
