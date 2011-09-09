@@ -18,32 +18,72 @@
 """Router class handles the transmission of Packets between all connected 
 devices"""
 
+from time import sleep
+from collections import deque
+
 class Packet(object):
-    def __init__(self, source, dest, data):
-        self.destination = dest
-        self.source = source
+    """Data bundle including destination information"""
+    def __init__(self, destinations, data):
+        if isinstance(destinations, deque): # make sure it is a deque
+            self.dest = destinations
+        else:
+            raise TypeError("destinations must be a collections.deque")
         self.data = data
+
+    def __str__(self):
+        return "{0} : {1}".format(" -> ".join(self.dest), self.data)
+
+    def next(self):
+        """Return name of next destination"""
+        return self.dest.popleft()
+
 
 class Device(object):
     """Devices to be connected to Router"""
-    def sendPacket(self, message):
-        print message
+    def __init__(self, router):
+        self.router = router
+
+    def send(self, packet):
+        # do something with packet
+        print packet
+        # done with packet
+        if len(packet.dest) > 0:
+            self.router.send(packet)
+
 
 class Router(object):
+    """Routes Packets to appropriate Device"""
     def __init__(self):
-        self.signals = {}
+        self.devTable = {}
 
-    def signal(self, device_name):
-        for device in self.signals.get(device_name, []):
-            handler(*args, **kwargs)
+    def send(self, packet):
+        """Send packet to next destination"""
+        self.devTable[packet.next()].send(packet)
 
-    def connect(self, signal_name, receiver):
-        handlers = self.signals.setdefault(signal_name, [])
-        handlers.append(receive)
+    def connect(self, device_name, device):
+        self.devTable[device_name] = device
 
-    def disconnect(self, signal_name, receiver):
-        handlers[signal_name].remove(receiver)
+    def disconnect(self, device_name, device):
+        self.devTable[device_name].pop()
 
 
 if __name__ == "__main__":
+    # create router
     r = Router()
+
+    # create devices, they need a ref to router in order to return packet
+    a = Device(r)
+    b = Device(r)
+    c = Device(r)
+
+    # connect devices
+    r.connect('a', a)
+    r.connect('b', b)
+    r.connect('c', c)
+
+    # create packet
+    n = 3 # number of round trips
+    p = Packet(deque(['a', 'b', 'c']*n), "data")
+
+    # send initial packet to router
+    r.send(p)
