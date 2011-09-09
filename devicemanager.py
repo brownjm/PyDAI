@@ -29,22 +29,22 @@ class DeviceManager(object):
 
     def addDevice(self, filename):
         self.DeviceList[filename] = self.DevFac.constructDevice(filename)
-        self.DeviceList[filename].addDeviceManager(self)
+       #self.DeviceList[filename].addDeviceManager(self)
 
     def sendPacket(self, packet):
-        self.DeviceList[packet.Destination].addPacket(packet)
+        self.DeviceList[packet.destination].write(packet)
 
     def sendResponse(self, packet):
         self.Outbox.put(packet)
-        print packet.Source, packet.Data
+        print packet.Source, packet.data
 
 if __name__ == '__main__':
     dm = DeviceManager(None)
-    dm.addDevice('Dev1')
-    dm.addDevice('Dev2')
-    dm.sendPacket(Packet('Dev1', 'User', 'Command1'))
-    dm.sendPacket(Packet('Dev1', 'User', 'Command2'))
-    dm.sendPacket(Packet('Dev1', 'User', 'Command3'))
-    dm.sendPacket(Packet('Dev2', 'User', 'Command1'))
-    dm.sendPacket(Packet('Dev2', 'User', 'Command2'))
-    dm.sendPacket(Packet('Dev2', 'User', 'Command3'))
+    dm.addDevice('dev1')
+    dm.addDevice('dev2')
+    dm.sendPacket(Packet('dev1', 'User', 'Command1'))
+    dm.sendPacket(Packet('dev1', 'User', 'Command2'))
+    dm.sendPacket(Packet('dev1', 'User', 'Command3'))
+    dm.sendPacket(Packet('dev2', 'User', 'Command1'))
+    dm.sendPacket(Packet('dev2', 'User', 'Command2'))
+    dm.sendPacket(Packet('dev2', 'User', 'Command3'))
