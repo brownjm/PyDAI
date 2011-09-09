@@ -14,3 +14,36 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""Router class handles the transmission of Packets between all connected 
+devices"""
+
+class Packet(object):
+    def __init__(self, source, dest, data):
+        self.destination = dest
+        self.source = source
+        self.data = data
+
+class Device(object):
+    """Devices to be connected to Router"""
+    def sendPacket(self, message):
+        print message
+
+class Router(object):
+    def __init__(self):
+        self.signals = {}
+
+    def signal(self, device_name):
+        for device in self.signals.get(device_name, []):
+            handler(*args, **kwargs)
+
+    def connect(self, signal_name, receiver):
+        handlers = self.signals.setdefault(signal_name, [])
+        handlers.append(receive)
+
+    def disconnect(self, signal_name, receiver):
+        handlers[signal_name].remove(receiver)
+
+
+if __name__ == "__main__":
+    r = Router()
