@@ -20,44 +20,27 @@ import Queue
 import time, random
 import protocol
 
-class Device(object):
+class Device(threading.Thread):
     def __init__(self, attributeDict, commandDict={}):
+        threading.Thread.__init__(self)
         self.attribute = attributeDict
         self.command = commandDict
-        self.commandPool = Queue.Queue()
-        self.commandThread = ProcessThread(self)
+        self.packetPool = Queue.Queue()
         self.protocol = protocol.Protocol(attributeDict)
+        self.protocol.open()
 
     def read(self):
         pass
 
     def write(self, packet):
-        self.commandPool.put(packet.data)
-        if not self.commandThread.isAlive():
-            self.commandThread.start()
-
-class ProcessThread(threading.Thread):
-    def __init__(self, device):
-        self.device = device
-        threading.Thread.__init__(self)
+        self.packetPool.put(packet)
+        if not self.isAlive():
+            self.start()
 
     def run(self):
-        while not self.device.commandPool.empty():
-            command = self.device.commandPool.get()
-            #Do something with command here!
-            #Receive response from device and send back up chain.
-            if not self.device.protocol.isOpen():
-                self.device.protocol.open()
-            self.device.protocol.write(command)
+        while not self.packetPool.empty():
+            packet = self.packetPool.get()
+            self.protocol.write(packet.data)
 
-if __name__ == '__main__':
-    d = Device({"PROTOCOL": "simulated"})
-    d.write("Command1 Dev1")
-    d.write("Command2 Dev1")
-    d.write("Command3 Dev1")
-
-    a = Device({"PROTOCOL": "simulated"})
-    a.write("Command1 Dev2")
-    a.write("Command2 Dev2")
-    a.write("Command3 Dev2")
+        threading.Thread.__init__(self)
 
