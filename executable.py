@@ -14,3 +14,52 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import router
+import devicemanager
+from collections import deque
+
+class Executable(router.Device):
+    def __init__(self):
+        self.commands = {"exit" : self._exit, "blah" : self._blah}
+
+        r = router.Router()
+        router.Device.__init__(self, r)
+        d = devicemanager.DeviceManager()
+        d.router = self.router
+        self.router.connect("EXEC", self)
+        self.router.connect("DEVMAN", d)
+
+    def run(self):
+        raise Exception("Required to override")
+
+    def execute(self, line):
+        command = line.split(' ')[0]
+        aftercommand = line.split(' ')[1:]
+        if command in self.commands:
+            self.commands[command]()
+        else:
+            print 'Command "' + command + '" not found.'
+
+        return command
+
+    def send(self, packet):
+        raise Exception("Required to override")
+
+    def doWelcome(self):
+        print """
+#    PyDAI
+#
+#    Copyright (C) 2011 Jeffery M. Brown, Greg A Cohoon, Kyle T Taylor
+#
+#    Type 'exit' to quit.
+"""
+
+    def _exit(self):
+        print 'Goodbye!!'
+
+    def _blah(self):
+        d = deque()
+        d.append("DEVMAN")
+        p = router.Packet(d, 'TESTING')
+        self.router.send(p)
