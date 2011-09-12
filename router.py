@@ -16,9 +16,8 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Router class handles the transmission of Packets between all connected 
-devices"""
+Nodes"""
 
-from time import sleep
 from collections import deque
 
 class Packet(object):
@@ -38,17 +37,14 @@ class Packet(object):
         return self.dest.popleft()
 
 
-class Device(object):
-    """Devices to be connected to Router"""
-    def __init__(self, router):
-        self.router = router
+class Node(object):
+    """Inherit from this class and overload send method to be connected to 
+Router"""
+    def __init__(self):
+        self.router = None
 
     def send(self, packet):
-        # do something with packet
-        print packet
-        # done with packet
-        if len(packet.dest) > 0:
-            self.router.send(packet)
+        raise AttributeError("Must overload send method")
 
 
 class Router(object):
@@ -61,20 +57,31 @@ class Router(object):
         self.devTable[packet.next()].send(packet)
 
     def connect(self, device_name, device):
+        device.router = self
         self.devTable[device_name] = device
 
-    def disconnect(self, device_name, device):
-        self.devTable[device_name].pop()
+    def disconnect(self, device_name):
+        device = self.devTable[device_name].pop()
+        device.router = None
 
 
 if __name__ == "__main__":
     # create router
     r = Router()
 
-    # create devices, they need a ref to router in order to return packet
-    a = Device(r)
-    b = Device(r)
-    c = Device(r)
+    # create a test device
+    class testdev(Node):
+        def __init__(self):
+            Node.__init__(self)
+
+        def send(self, packet):
+            print packet
+            if len(packet.dest) > 0:
+                self.router.send(packet)
+
+    a = testdev()
+    b = testdev()
+    c = testdev()
 
     # connect devices
     r.connect('a', a)
@@ -82,8 +89,7 @@ if __name__ == "__main__":
     r.connect('c', c)
 
     # create packet
-    n = 3 # number of round trips
-    p = Packet(deque(['a', 'b', 'c']*n), "data")
+    p = Packet(deque(['a', 'b', 'c']), "data")
 
     # send initial packet to router
     r.send(p)
