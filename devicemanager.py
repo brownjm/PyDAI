@@ -16,35 +16,30 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import Queue
+import router
 from devicefactory import DeviceFactory
-from packet import Packet
 
-class DeviceManager(object):
+class DeviceManager(router.Device):
     """Provides methods to handle installed devices."""
-    def __init__(self, router):
-        self.DeviceList = dict()
-        self.Outbox = Queue.Queue()
-        self.Router = router
-        self.DevFac = DeviceFactory()
+    def __init__(self):
+        self.deviceList = dict()
+        self.outbox = Queue.Queue()
+        self.devFac = DeviceFactory()
+
+    def send(self, packet):
+        pass
 
     def addDevice(self, filename):
-        self.DeviceList[filename] = self.DevFac.constructDevice(filename)
+        self.deviceList[filename] = self.DevFac.constructDevice(filename)
        #self.DeviceList[filename].addDeviceManager(self)
-
-    def sendPacket(self, packet):
-        self.DeviceList[packet.destination].write(packet)
-
-    def sendResponse(self, packet):
-        self.Outbox.put(packet)
-        print packet.Source, packet.data
 
 if __name__ == '__main__':
     dm = DeviceManager(None)
-    dm.addDevice('dev1')
-    dm.addDevice('dev2')
-    dm.sendPacket(Packet('dev1', 'User', 'Command1'))
-    dm.sendPacket(Packet('dev1', 'User', 'Command2'))
-    dm.sendPacket(Packet('dev1', 'User', 'Command3'))
-    dm.sendPacket(Packet('dev2', 'User', 'Command1'))
-    dm.sendPacket(Packet('dev2', 'User', 'Command2'))
-    dm.sendPacket(Packet('dev2', 'User', 'Command3'))
+#    dm.addDevice('dev1')
+#    dm.addDevice('dev2')
+#    dm.sendPacket(router.Packet('dev1', 'User', 'Command1'))
+#    dm.sendPacket(router.Packet('dev1', 'User', 'Command2'))
+#    dm.sendPacket(router.Packet('dev1', 'User', 'Command3'))
+#    dm.sendPacket(router.Packet('dev2', 'User', 'Command1'))
+#    dm.sendPacket(router.Packet('dev2', 'User', 'Command2'))
+#    dm.sendPacket(router.Packet('dev2', 'User', 'Command3'))
