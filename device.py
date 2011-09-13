@@ -19,15 +19,23 @@ import threading
 import Queue
 import time, random
 import protocol
+import router
 
-class Device(threading.Thread):
+class Device(threading.Thread, router.Node):
     def __init__(self, attributeDict, commandDict={}):
         threading.Thread.__init__(self)
+        self.name = ""
         self.attribute = attributeDict
         self.command = commandDict
         self.packetPool = Queue.Queue()
         self.protocol = protocol.Protocol(attributeDict)
         self.protocol.open()
+
+    def send(self, packet):
+        if packet.data == 'destroy':
+            self.router.disconnect(self.name)
+            packet.dest.append("EXEC")
+            packet.data = "Device " + self.name + " removed."
 
     def read(self):
         pass
