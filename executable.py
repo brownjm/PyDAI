@@ -19,16 +19,14 @@ import router
 import devicemanager
 from collections import deque
 
-class Executable(router.Device):
+class Executable(router.Node):
     def __init__(self):
-        self.commands = {"exit" : self._exit, "blah" : self._blah}
+        self.commands = {"exit" : self._exit, "create" : self._create, "destroy" : self._destroy,  "query" : self._query}
 
         r = router.Router()
-        router.Device.__init__(self, r)
         d = devicemanager.DeviceManager()
-        d.router = self.router
-        self.router.connect("EXEC", self)
-        self.router.connect("DEVMAN", d)
+        r.connect("EXEC", self)
+        r.connect("DEVMAN", d)
 
     def run(self):
         raise Exception("Required to override")
@@ -58,8 +56,20 @@ class Executable(router.Device):
     def _exit(self):
         print 'Goodbye!!'
 
-    def _blah(self):
+    def _create(self):
         d = deque()
         d.append("DEVMAN")
-        p = router.Packet(d, 'TESTING')
+        p = router.Packet(d, 'create dev1 as device1')
+        self.router.send(p)
+
+    def _destroy(self):
+        d = deque()
+        d.append("DEVMAN")
+        p = router.Packet(d, 'destroy device1')
+        self.router.send(p)
+
+    def _query(self):
+        d = deque()
+        d.append("DEVMAN")
+        p = router.Packet(d, 'query')
         self.router.send(p)

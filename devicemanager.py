@@ -19,27 +19,45 @@ import Queue
 import router
 from devicefactory import DeviceFactory
 
-class DeviceManager(router.Device):
+class DeviceManager(router.Node):
     """Provides methods to handle installed devices."""
     def __init__(self):
-        self.deviceList = dict()
+        self.deviceList = []
         self.outbox = Queue.Queue()
         self.devFac = DeviceFactory()
 
     def send(self, packet):
-        pass
+        command = packet.data.split(' ')[0]
+        aftercommand = packet.data.split(' ')[1:]
+        if command == 'create':
+            dev = aftercommand[0]
+            name = aftercommand[2]
+            if name in self.deviceList:
+                raise Exception("Device already created with the name " + name)
+            self.addDevice(dev, name)
+            packet.dest.append("EXEC")
+            packet.data = "Device " + name + " created."
+        elif command == 'destroy':
+            name = aftercommand[0]
+            if not name in self.deviceList:
+                raise Exception("No device named " + name + " exists.")
+            
+            self.removeDevice(name, packet)
+        elif command == 'query':
+            packet.dest.append("EXEC")
+            packet.data = self.deviceList
+            
 
-    def addDevice(self, filename):
-        self.deviceList[filename] = self.DevFac.constructDevice(filename)
-       #self.DeviceList[filename].addDeviceManager(self)
+    def addDevice(self, filename, username):
+        d = self.devFac.constructDevice(filename)
+        d.name = username
+        self.router.connect(username, d)
+        self.deviceList.append(username)
+    
+    def removeDevice(self, username, packet):
+        packet.dest.append(username)
+        packet.data = 'destroy'
+        self.deviceList.remove(username)
 
 if __name__ == '__main__':
-    dm = DeviceManager(None)
-#    dm.addDevice('dev1')
-#    dm.addDevice('dev2')
-#    dm.sendPacket(router.Packet('dev1', 'User', 'Command1'))
-#    dm.sendPacket(router.Packet('dev1', 'User', 'Command2'))
-#    dm.sendPacket(router.Packet('dev1', 'User', 'Command3'))
-#    dm.sendPacket(router.Packet('dev2', 'User', 'Command1'))
-#    dm.sendPacket(router.Packet('dev2', 'User', 'Command2'))
-#    dm.sendPacket(router.Packet('dev2', 'User', 'Command3'))
+    dm = DeviceManager()
