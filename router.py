@@ -22,7 +22,7 @@ from collections import deque
 
 class Packet(object):
     """Data bundle including destination information"""
-    def __init__(self, destinations, data):
+    def __init__(self, destinations=deque(), data=None):
         if isinstance(destinations, deque): # make sure it is a deque
             self.dest = destinations
         else:

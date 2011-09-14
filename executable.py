@@ -48,7 +48,7 @@ class Executable(router.Node):
         print """
 #    PyDAI
 #
-#    Copyright (C) 2011 Jeffery M. Brown, Greg A Cohoon, Kyle T Taylor
+#    Copyright (C) 2011 Jeffrey M. Brown, Greg A Cohoon, Kyle T Taylor
 #
 #    Type 'exit' to quit.
 """
