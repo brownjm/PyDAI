@@ -54,14 +54,18 @@ class Router(object):
 
     def send(self, packet):
         """Send packet to next destination"""
+        if len(packet.dest) == 0:
+            return
+
         self.devTable[packet.next()].send(packet)
+        self.send(packet)
 
     def connect(self, device_name, device):
         device.router = self
         self.devTable[device_name] = device
 
     def disconnect(self, device_name):
-        device = self.devTable[device_name].pop()
+        device = self.devTable.pop(device_name)
         device.router = None
 
 

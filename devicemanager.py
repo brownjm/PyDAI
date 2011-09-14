@@ -16,35 +16,48 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import Queue
+import router
 from devicefactory import DeviceFactory
-from packet import Packet
 
-class DeviceManager(object):
+class DeviceManager(router.Node):
     """Provides methods to handle installed devices."""
-    def __init__(self, router):
-        self.DeviceList = dict()
-        self.Outbox = Queue.Queue()
-        self.Router = router
-        self.DevFac = DeviceFactory()
+    def __init__(self):
+        self.deviceList = []
+        self.outbox = Queue.Queue()
+        self.devFac = DeviceFactory()
 
-    def addDevice(self, filename):
-        self.DeviceList[filename] = self.DevFac.constructDevice(filename)
-       #self.DeviceList[filename].addDeviceManager(self)
+    def send(self, packet):
+        command = packet.data.split(' ')[0]
+        aftercommand = packet.data.split(' ')[1:]
+        if command == 'create':
+            dev = aftercommand[0]
+            name = aftercommand[2]
+            if name in self.deviceList:
+                raise Exception("Device already created with the name " + name)
+            self.addDevice(dev, name)
+            packet.dest.append("EXEC")
+            packet.data = "Device " + name + " created."
+        elif command == 'destroy':
+            name = aftercommand[0]
+            if not name in self.deviceList:
+                raise Exception("No device named " + name + " exists.")
+            
+            self.removeDevice(name, packet)
+        elif command == 'query':
+            packet.dest.append("EXEC")
+            packet.data = self.deviceList
+            
 
-    def sendPacket(self, packet):
-        self.DeviceList[packet.destination].write(packet)
-
-    def sendResponse(self, packet):
-        self.Outbox.put(packet)
-        print packet.Source, packet.data
+    def addDevice(self, filename, username):
+        d = self.devFac.constructDevice(filename)
+        d.name = username
+        self.router.connect(username, d)
+        self.deviceList.append(username)
+    
+    def removeDevice(self, username, packet):
+        packet.dest.append(username)
+        packet.data = 'destroy'
+        self.deviceList.remove(username)
 
 if __name__ == '__main__':
-    dm = DeviceManager(None)
-    dm.addDevice('dev1')
-    dm.addDevice('dev2')
-    dm.sendPacket(Packet('dev1', 'User', 'Command1'))
-    dm.sendPacket(Packet('dev1', 'User', 'Command2'))
-    dm.sendPacket(Packet('dev1', 'User', 'Command3'))
-    dm.sendPacket(Packet('dev2', 'User', 'Command1'))
-    dm.sendPacket(Packet('dev2', 'User', 'Command2'))
-    dm.sendPacket(Packet('dev2', 'User', 'Command3'))
+    dm = DeviceManager()

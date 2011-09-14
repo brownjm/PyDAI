@@ -14,3 +14,24 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from executable import Executable
+
+class CommandLinePrompt(Executable):
+    def run(self):
+        while 1:
+#            try:
+                line = raw_input('> ')
+
+                command = self.execute(line)
+                if command == 'exit':
+                    break
+#            except Exception as ex:
+#                print ex
+
+    def send(self, packet):
+        print packet.data
+
+if __name__ == '__main__':
+    CLP = CommandLinePrompt()
+    CLP.run()
