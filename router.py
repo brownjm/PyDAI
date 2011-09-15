@@ -22,15 +22,23 @@ from collections import deque
 
 class Packet(object):
     """Data bundle including destination information"""
-    def __init__(self, destinations=deque(), data=None):
-        if isinstance(destinations, deque): # make sure it is a deque
-            self.dest = destinations
-        else:
-            raise TypeError("destinations must be a collections.deque")
+    def __init__(self, destinations=deque(), data={}):
+        self.dest = destinations
         self.data = data
 
     def __str__(self):
-        return "{0} : {1}".format(" -> ".join(self.dest), self.data)
+        """Pretty print of Packet"""
+        return "{0} | {1}".format(" -> ".join(self.dest), self.data)
+
+    def __getitem__(self, key):
+        return self.data[key]
+
+    def __setitem__(self, key, val):
+        self.data[key] = val
+
+    def addDest(self, destination):
+        """Add new destination into queue"""
+        self.dest.append(destination)
 
     def next(self):
         """Return name of next destination"""
@@ -93,7 +101,11 @@ if __name__ == "__main__":
     r.connect('c', c)
 
     # create packet
-    p = Packet(deque(['a', 'b', 'c']), "data")
+    p = Packet()
+    p.addDest('a')
+    p.addDest('b')
+    p.addDest('c')
+    p["data"] = 1
 
     # send initial packet to router
     r.send(p)
