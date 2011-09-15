@@ -19,12 +19,12 @@ from collections import deque
 import router
 import devicemanager
 import parser
-from constants import DEVMAN, EXEC
+from constants import EXIT, EXEC, DEVMAN
 
 class Executable(router.Node):
     def __init__(self):
         # commands specific to executable
-        self.commands = {"exit" : self._exit}
+        self.commands = {EXIT : self._exit}
 
         # create essential classes
         self.router = router.Router()
@@ -39,8 +39,8 @@ class Executable(router.Node):
         raise Exception("Required to override")
 
     def execute(self, line):
-        if line == "exit":
-            self.commands["exit"]()
+        if line == EXIT:
+            self.commands[EXIT]()
 
         packet = self.parser.parse(line)
         self.router.send(packet)

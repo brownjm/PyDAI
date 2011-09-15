@@ -20,6 +20,7 @@ import Queue
 import time, random
 import protocol
 import router
+from constants import GET, DELETE, EXEC, STATUS
 
 class Device(threading.Thread, router.Node):
     def __init__(self, attributeDict, commandDict={}):
@@ -32,10 +33,15 @@ class Device(threading.Thread, router.Node):
         self.protocol.open()
 
     def send(self, packet):
-        if packet.data == 'destroy':
-            self.router.disconnect(self.name)
-            packet.dest.append("EXEC")
-            packet.data = "Device " + self.name + " removed."
+        if GET in packet.data:
+            com = self.command[packet.data[GET]]
+            # incomplete
+            
+        elif DELETE in packet.data:
+            name = packet.data[DELETE]
+            self.router.disconnect(name)
+            packet.addDest(EXEC)
+            packet[STATUS] = "Device deleted: {0}".format(name)
 
     def read(self):
         pass

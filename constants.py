@@ -17,11 +17,30 @@
 
 """Module to hold program wide constants"""
 
-# device manager name
-DEVMAN = "devman"
+# Names of files and directories
+DEVFOLDER = "devices"
+DEVTEMPLATE = "devicetemplate"
 
-# executable name
-EXEC = "exec"
+# Names of devices
+DEVMAN = "devman"       # device manager
+EXEC = "exec"           # executable
+ROUTER = "router"       # router
 
-# router name
-ROUTER = "router"
+# Commands
+NEW = "new"             # create something
+DELETE = "delete"       # delete something
+GET = "get"             # run command on device
+FROM = "from"           # sets destination
+QUERY = "query"         # request information
+STATUS = "status"       # reponse to user on status of received packet
+EXIT = "exit"           # exits program
+
+# Device configuration file constants
+NAME = "name"
+VENDOR = "vendor"
+MODEL = "model"
+SN = "sn"
+PROTOCOL = "protocol"
+
+# Protocol types
+SIMULATED = "simulated"

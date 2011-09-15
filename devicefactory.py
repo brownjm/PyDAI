@@ -21,10 +21,11 @@ files found in devices folder."""
 import os
 import shutil
 import device
+from constants import DEVFOLDER, DEVTEMPLATE
 
 class DeviceFactory(object):
     """Provides methods to produce Device classes from configuration files."""
-    def __init__(self, devicefolder="devices"):
+    def __init__(self, devicefolder=DEVFOLDER):
         self.dir = devicefolder
         self.devices = []
         self._updateDevList()
@@ -39,7 +40,7 @@ class DeviceFactory(object):
     def genConfigTemplate(self, filename):
         """Generate a blank configuration file allowing users to add in 
 specific values of their device."""
-        shutil.copy("devicetemplate", os.path.join(self.dir, filename))
+        shutil.copy(DEVTEMPLATE, os.path.join(self.dir, filename))
         self._updateDevList()
 
     def constructDevice(self, filename):
@@ -62,15 +63,18 @@ specific values of their device."""
         attributeDict = {}
         commandDict = {}
         entry = []
+        self.l = lines
         for line in lines:
             if "=" in line: # must be an attribute
                 entry = line.split("=")
+                entry = [word.strip() for word in entry] # strip whitespace
                 if len(entry) is not 2:
                     raise ConfigFileError(fn, line)
                 attributeDict[entry[0]] = entry[1]
 
             elif ":" in line: # must be a command
                 entry = line.split(":")
+                entry = [word.strip() for word in entry] # strip whitespace
                 if len(entry) is not 3:
                     raise ConfigFileError(fn, line)
                 commandDict[entry[0]] = (entry[1], entry[2])
@@ -78,6 +82,7 @@ specific values of their device."""
                 raise ConfigFileError(fn, line)
 
         # create device from newly formed dictionaries
+        self.att = attributeDict
         return device.Device(attributeDict, commandDict)
 
 
@@ -95,5 +100,7 @@ class ConfigFileError(Exception):
         return self.msg
 
 if __name__ == "__main__":
-    df = DeviceFactory("devices")
+    df = DeviceFactory()
     dev = df.constructDevice("dev1")
+    print dev
+    print dev.command

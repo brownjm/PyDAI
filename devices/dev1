@@ -3,19 +3,19 @@
 
 # Device Attributes
 # Attributes have the following form
-# ATTRIBUTE=Value
+# attribute = value
 @attributes
-NAME=Device 1
-VENDOR=DevFac
-MODEL=Simulator
-SN=0001
-PROTOCOL=simulated
+name     = Device 1
+vendor   = DevFac
+model    = Simulator
+sn       = 0002
+protocol = simulated
 
 # Device Commands
 # Commands have the following form
-# UserDefinedName:ProtocolCommand:ReturnType
+# UserDefinedName : ProtocolCommand : ReturnType
 @commands
-name:getName:string
-vendor:getVendor:string
-model:getModel:string
-sn:getSN:string
+name   : getName   : string
+vendor : getVendor : string
+model  : getModel  : string
+sn     : getSN     : string
