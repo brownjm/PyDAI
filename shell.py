@@ -31,6 +31,9 @@ class CommandLinePrompt(Executable):
 #            except Exception as ex:
 #                print ex
 
+    def send(self, packet):
+        print packet["status"]
+
 
 if __name__ == '__main__':
     CLP = CommandLinePrompt()
