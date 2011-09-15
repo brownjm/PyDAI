@@ -25,7 +25,7 @@ class CommandLinePrompt(Executable):
                 line = raw_input('> ')
                 if line == "exit":
                     break
-                else:
+                if len(line) > 0:
                     self.execute(line)
 
 #            except Exception as ex:
