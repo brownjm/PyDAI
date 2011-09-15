@@ -22,9 +22,9 @@ from collections import deque
 
 class Packet(object):
     """Data bundle including destination information"""
-    def __init__(self, destinations=deque(), data={}):
-        self.dest = destinations
-        self.data = data
+    def __init__(self):
+        self.dest = deque()
+        self.data = {}
 
     def __str__(self):
         """Pretty print of Packet"""
