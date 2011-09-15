@@ -18,6 +18,7 @@
 import Queue
 import router
 from devicefactory import DeviceFactory
+from constants import EXEC
 
 class DeviceManager(router.Node):
     """Provides methods to handle installed devices."""
@@ -27,25 +28,35 @@ class DeviceManager(router.Node):
         self.devFac = DeviceFactory()
 
     def send(self, packet):
-        command = packet.data.split(' ')[0]
-        aftercommand = packet.data.split(' ')[1:]
-        if command == 'create':
-            dev = aftercommand[0]
-            name = aftercommand[2]
+        if "new" in packet.data:
+            name = packet.data["new"]
             if name in self.deviceList:
-                raise Exception("Device already created with the name " + name)
-            self.addDevice(dev, name)
-            packet.dest.append("EXEC")
-            packet.data = "Device " + name + " created."
-        elif command == 'destroy':
-            name = aftercommand[0]
+                packet.addDest(EXEC)
+                msg = "Device already created with the name: {0}".format(name)
+                packet["status"] = msg
+                self.router.send(packet)
+            else:
+                self.addDevice(name, name)
+                packet.addDest(EXEC)
+                packet["status"] = "Device created: {0}".format(name)
+                self.router.send(packet)
+
+        elif "delete" in packet.data:
+            name = packet.data["delete"]
             if not name in self.deviceList:
-                raise Exception("No device named " + name + " exists.")
-            
-            self.removeDevice(name, packet)
-        elif command == 'query':
-            packet.dest.append("EXEC")
-            packet.data = self.deviceList
+                packet.addDest(EXEC)
+                msg = "Device does not exist: {0}".format(name)
+                packet["status"] = msg
+                self.router.send(packet)
+            else:
+                self.removeDevice(name, packet)
+                
+                
+
+        elif "query" in packet.data:
+            packet.addDest(EXEC)
+            packet["status"] = str(self.deviceList)
+            self.router.send(packet)
             
 
     def addDevice(self, filename, username):
@@ -55,9 +66,13 @@ class DeviceManager(router.Node):
         self.deviceList.append(username)
     
     def removeDevice(self, username, packet):
-        packet.dest.append(username)
-        packet.data = 'destroy'
+        packet.addDest(username)
+        packet["kill"] = "kill"
+        packet.addDest(EXEC)
+        packet["status"] = "Device deleted: {0}".format(username)
+        print packet
         self.deviceList.remove(username)
+        self.router.send(packet)
 
 if __name__ == '__main__':
     dm = DeviceManager()

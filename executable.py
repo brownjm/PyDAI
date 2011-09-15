@@ -15,31 +15,35 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections import deque
 import router
 import devicemanager
-from collections import deque
+import parser
+from constants import DEVMAN, EXEC
 
 class Executable(router.Node):
     def __init__(self):
-        self.commands = {"exit" : self._exit, "create" : self._create, "destroy" : self._destroy,  "query" : self._query}
+        # commands specific to executable
+        self.commands = {"exit" : self._exit}
 
-        r = router.Router()
-        d = devicemanager.DeviceManager()
-        r.connect("EXEC", self)
-        r.connect("DEVMAN", d)
+        # create essential classes
+        self.router = router.Router()
+        self.devman = devicemanager.DeviceManager()
+        self.parser = parser.Parser(parser.commands, parser.rules)
+
+        # make connections to router
+        self.router.connect(EXEC, self)
+        self.router.connect(DEVMAN, self.devman)
 
     def run(self):
         raise Exception("Required to override")
 
     def execute(self, line):
-        command = line.split(' ')[0]
-        aftercommand = line.split(' ')[1:]
-        if command in self.commands:
-            self.commands[command]()
-        else:
-            print 'Command "' + command + '" not found.'
+        if line == "exit":
+            self.commands["exit"]()
 
-        return command
+        packet = self.parser.parse(line)
+        self.router.send(packet)
 
     def send(self, packet):
         raise Exception("Required to override")
@@ -55,21 +59,3 @@ class Executable(router.Node):
 
     def _exit(self):
         print 'Goodbye!!'
-
-    def _create(self):
-        d = deque()
-        d.append("DEVMAN")
-        p = router.Packet(d, 'create dev1 as device1')
-        self.router.send(p)
-
-    def _destroy(self):
-        d = deque()
-        d.append("DEVMAN")
-        p = router.Packet(d, 'destroy device1')
-        self.router.send(p)
-
-    def _query(self):
-        d = deque()
-        d.append("DEVMAN")
-        p = router.Packet(d, 'query')
-        self.router.send(p)

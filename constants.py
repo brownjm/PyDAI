@@ -18,10 +18,10 @@
 """Module to hold program wide constants"""
 
 # device manager name
-DEVMAN = "DEVMAN"
+DEVMAN = "devman"
 
 # executable name
-EXEC = "EXEC"
+EXEC = "exec"
 
 # router name
-ROUTER = "ROUTER"
+ROUTER = "router"
