@@ -32,10 +32,14 @@ class Device(threading.Thread, router.Node):
         self.protocol.open()
 
     def send(self, packet):
-        if packet.data == 'destroy':
+        if "get" in packet.data:
+            com = self.command[packet.data["get"]]
+            # incomplete
+            
+        elif "delete" in packet.data:
             self.router.disconnect(self.name)
-            packet.dest.append("EXEC")
-            packet.data = "Device " + self.name + " removed."
+            packet.addDest(EXEC)
+            packet["status"] = "Device deleted: {0}".format(username)
 
     def read(self):
         pass

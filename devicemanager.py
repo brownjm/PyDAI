@@ -67,10 +67,6 @@ class DeviceManager(router.Node):
     
     def removeDevice(self, username, packet):
         packet.addDest(username)
-        packet["kill"] = "kill"
-        packet.addDest(EXEC)
-        packet["status"] = "Device deleted: {0}".format(username)
-        print packet
         self.deviceList.remove(username)
         self.router.send(packet)
 
