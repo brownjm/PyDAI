@@ -125,7 +125,7 @@ class Query(Command):
         Command.__init__(self, wordList, 1)
 
     def modPacket(self, packet):
-        dev = self.args[0].upper() # capitalize, device naming convention
+        dev = self.args[0]
         packet.addDest(dev)
         packet[self.name] = dev
 
