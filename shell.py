@@ -16,6 +16,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from executable import Executable
+from constants import EXIT, STATUS
 
 class CommandLinePrompt(Executable):
     def run(self):
@@ -23,7 +24,7 @@ class CommandLinePrompt(Executable):
         while 1:
 #            try:
                 line = raw_input('> ')
-                if line == "exit":
+                if line == EXIT:
                     break
                 if len(line) > 0:
                     self.execute(line)
@@ -32,7 +33,7 @@ class CommandLinePrompt(Executable):
 #                print ex
 
     def send(self, packet):
-        print packet["status"]
+        print packet[STATUS]
 
 
 if __name__ == '__main__':

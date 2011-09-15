@@ -18,7 +18,7 @@
 import Queue
 import router
 from devicefactory import DeviceFactory
-from constants import EXEC
+from constants import NEW, EXEC, STATUS, DELETE, QUERY
 
 class DeviceManager(router.Node):
     """Provides methods to handle installed devices."""
@@ -28,34 +28,32 @@ class DeviceManager(router.Node):
         self.devFac = DeviceFactory()
 
     def send(self, packet):
-        if "new" in packet.data:
-            name = packet.data["new"]
+        if NEW in packet.data:
+            name = packet.data[NEW]
             if name in self.deviceList:
                 packet.addDest(EXEC)
                 msg = "Device already created with the name: {0}".format(name)
-                packet["status"] = msg
+                packet[STATUS] = msg
                 self.router.send(packet)
             else:
                 self.addDevice(name, name)
                 packet.addDest(EXEC)
-                packet["status"] = "Device created: {0}".format(name)
+                packet[STATUS] = "Device created: {0}".format(name)
                 self.router.send(packet)
 
-        elif "delete" in packet.data:
-            name = packet.data["delete"]
+        elif DELETE in packet.data:
+            name = packet.data[DELETE]
             if not name in self.deviceList:
                 packet.addDest(EXEC)
                 msg = "Device does not exist: {0}".format(name)
-                packet["status"] = msg
+                packet[STATUS] = msg
                 self.router.send(packet)
             else:
                 self.removeDevice(name, packet)
                 
-                
-
-        elif "query" in packet.data:
+        elif QUERY in packet.data:
             packet.addDest(EXEC)
-            packet["status"] = str(self.deviceList)
+            packet[STATUS] = str(self.deviceList)
             self.router.send(packet)
             
 

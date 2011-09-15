@@ -18,19 +18,20 @@
 """Module containing various communication protocols."""
 
 from collections import deque
+from constants import PROTOCOL, SIMULATED
 
 class Protocol(object):
     """Wrapper class to provide common interface for all communication 
 protocols"""
     def __init__(self, attributeDict):
-        if attributeDict["PROTOCOL"] in available: # check if implemented
+        if attributeDict[PROTOCOL] in available: # check if implemented
             self._config(attributeDict)
         else:
             raise IOError("{0} not implemented yet".format(attributeDict["PROTOCOL"]))
 
     def _config(self, attributeDict):
         """Create and configure backend device"""
-        self.backend = available[attributeDict["PROTOCOL"]](attributeDict)
+        self.backend = available[attributeDict[PROTOCOL]](attributeDict)
 
     def open(self):
         """Open connection to backend"""
@@ -94,9 +95,9 @@ class EmptyBufferError(Exception):
 
 
 # available protocols
-available = {"simulated" : Simulated}
+available = {SIMULATED : Simulated}
 
 if __name__ == "__main__":
-    attributeDict = {"PROTOCOL":"simulated"}
+    attributeDict = {PROTOCOL: SIMULATED}
     p = Protocol(attributeDict)
     p.open()
