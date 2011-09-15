@@ -19,14 +19,13 @@
 
 from collections import deque
 import router
-from constants import DEVMAN
+from constants import DEVMAN, NEW, DELETE, FROM, GET, QUERY
 
-class Parser(router.Node):
+class Parser(object):
     """Creates packets from input strings"""
     def __init__(self, commands, rules):
         self.commands = commands
         self.rules = rules
-        router.Node.__init__(self) # allows connection to Router class
 
     def parse(self, string):
         """Create a packet from the input string"""
@@ -132,11 +131,11 @@ class Query(Command):
 
 # dictionary of available commands
 # user defined name:  associated class
-commands = {"new": New,
-            "delete": Delete,
-            "from": From,
-            "get": Get,
-            "query": Query}
+commands = {NEW: New,
+            DELETE: Delete,
+            FROM: From,
+            GET: Get,
+            QUERY: Query}
 
 # sets of commands that constitute a complete packets
 rules = [set([New]),
