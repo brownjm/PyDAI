@@ -19,18 +19,18 @@ from executable import Executable
 
 class CommandLinePrompt(Executable):
     def run(self):
+        self.doWelcome()
         while 1:
 #            try:
                 line = raw_input('> ')
-
-                command = self.execute(line)
-                if command == 'exit':
+                if line == "exit":
                     break
+                else:
+                    self.execute(line)
+
 #            except Exception as ex:
 #                print ex
 
-    def send(self, packet):
-        print packet.data
 
 if __name__ == '__main__':
     CLP = CommandLinePrompt()
