@@ -15,8 +15,11 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""Module to handle translating text input from user into valid Packets"""
+
 from collections import deque
 import router
+from constants import DEVMAN
 
 class Parser(router.Node):
     """Creates packets from input strings"""
@@ -26,21 +29,18 @@ class Parser(router.Node):
         router.Node.__init__(self) # allows connection to Router class
 
     def parse(self, string):
+        """Create a packet from the input string"""
         words = self._createWordList(string)
-        commandSet = set()
-        commandClasses = set()
+
+        commands = []
         while len(words) > 0:
-            command = self._constructCommand(words)
-            commandSet.add(command) # set of command objects
-            commandClasses.add(command.__class__) # set of corresponding class
+            commands.append(self._constructCommand(words))
 
-        commandClasses = frozenset(commandClasses) # make hashable as key
-
-        if commandClasses in rules:
-            packetList = self._generatePackets(commandSet, rules[commandClasses])
-            return packetList
+        if self._isValid(commands):
+            return self._generatePacket(commands)
         else:
-            raise KeyError("Incomplete command set: {0}".format(commandSet))
+            names = [com.name for com in commands]
+            raise KeyError("Not a valid command set: {0}".format(names))
 
     def _createWordList(self, string):
         """Find the words within given string and create a list."""
@@ -50,36 +50,37 @@ class Parser(router.Node):
     def _constructCommand(self, wordList):
         """Create commands from words"""
         if wordList[0] in self.commands:
-            return self.commands[wordList.popleft()](wordList)
+            return self.commands[wordList[0]](wordList)
         else:
             raise KeyError("Command not recognized: {0}".format(wordList[0]))
 
-    def _generatePackets(self, commandSet, rule):
-        packetList = []
-        for packetRule in rule: # length of rule determines number of packets
-            p = router.Packet()
-            for commandClass in packetRule:
-                for command in commandSet:
-                    if isinstance(command, commandClass):
-                        command.modPacket(p)
+    def _isValid(self, commands):
+        self.comType = set([type(com) for com in commands])
+        return self.comType in rules
 
-            packetList.append(p)
-
-        return packetList
+    def _generatePacket(self, commands):
+        """Use commands to create a Packet"""
+        packet = router.Packet()
+        for command in commands:
+            command.modPacket(packet)
+        return packet
 
 
 class Command(object):
     """Base class for all commands"""
     def __init__(self, wordList, nargs=1):
+        self.name = wordList.popleft()
         self.nargs = nargs
         self.args = []
         if len(wordList) < nargs:
-            raise Exception("Command {0} expected {1} argument(s) and received {2}".format(self.__class__, nargs, len(wordList)))
+            msg = "Command '{0}' expected {1} argument(s) and received {2}"
+            raise Exception(msg.format(self.name, nargs, len(wordList)))
+
         for n in range(nargs):
             self.args.append(wordList.popleft())
 
     def modPacket(self, packet):
-        raise Exception("Must overload how command modifies packet")
+        raise Exception("Must overload method which modifies packet")
 
     def __str__(self):
         return str(self.__class__) + " : " + ", ".join(self.args)
@@ -90,8 +91,8 @@ class New(Command):
         Command.__init__(self, wordList, 1)
 
     def modPacket(self, packet):
-        packet.dest = deque(["DEVMAN", "EXEC"])
-        packet.data = self
+        packet.addDest(DEVMAN)
+        packet[self.name] = self.args[0]
 
 class Delete(Command):
     """Deletion delete an object"""
@@ -99,8 +100,8 @@ class Delete(Command):
         Command.__init__(self, wordList, 1)
 
     def modPacket(self, packet):
-        packet.dest = deque(["DEVMAN", "EXEC"])
-        packet.data = self
+        packet.addDest(DEVMAN)
+        packet[self.name] = self.args[0]
 
 class From(Command):
     """Sets packets packet destination"""
@@ -108,7 +109,7 @@ class From(Command):
         Command.__init__(self, wordList, 1)
 
     def modPacket(self, packet):
-        packet.dest = deque([self.args[0], "EXEC"])
+        packet.addDest(self.args[0])
 
 class Get(Command):
     """Sends message to device"""
@@ -116,7 +117,17 @@ class Get(Command):
         Command.__init__(self, wordList, 1)
 
     def modPacket(self, packet):
-        packet.data = self
+        packet[self.name] = self.args[0]
+
+class Query(Command):
+    """Query a device and receive information"""
+    def __init__(self, wordList):
+        Command.__init__(self, wordList, 1)
+
+    def modPacket(self, packet):
+        dev = self.args[0].upper() # capitalize, device naming convention
+        packet.addDest(dev)
+        packet[self.name] = dev
 
 
 # dictionary of available commands
@@ -124,16 +135,19 @@ class Get(Command):
 commands = {"new": New,
             "delete": Delete,
             "from": From,
-            "get": Get}
+            "get": Get,
+            "query": Query}
 
 # sets of commands that constitute a complete packets
-# tuple of tuples to show grouping of commands into individual packets
-rules = {frozenset([New]): [[New]],
-         frozenset([Delete]): [[Delete]],
-         frozenset([Get, From]): [[Get, From]]}
+rules = [set([New]),
+         set([Delete]),
+         set([Get, From]),
+         set([Query])]
 
 
 if __name__ == "__main__":
     p = Parser(commands, rules)
-    packets = p.parse("get waveform from dev")
-    print packets[0]
+    
+    print p.parse("new dev1")
+    print p.parse("get waveform from dev1")
+    print p.parse("delete dev1")
