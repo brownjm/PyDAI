@@ -51,8 +51,9 @@ class DeviceManager(router.Node):
             else:
                 self.removeDevice(name, packet)
                 
+                
 
-        elif command == 'query':
+        elif "query" in packet.data:
             packet.addDest(EXEC)
             packet["status"] = str(self.deviceList)
             self.router.send(packet)
@@ -66,9 +67,12 @@ class DeviceManager(router.Node):
     
     def removeDevice(self, username, packet):
         packet.addDest(username)
-        packet["kill"] = 'kill'
-        self.router.send(packet)
+        packet["kill"] = "kill"
+        packet.addDest(EXEC)
+        packet["status"] = "Device deleted: {0}".format(username)
+        print packet
         self.deviceList.remove(username)
+        self.router.send(packet)
 
 if __name__ == '__main__':
     dm = DeviceManager()
