@@ -22,15 +22,15 @@ class CommandLinePrompt(Executable):
     def run(self):
         self.doWelcome()
         while 1:
-#            try:
+            try:
                 line = raw_input('> ')
                 if line == EXIT:
                     break
                 if len(line) > 0:
                     self.execute(line)
 
-#            except Exception as ex:
-#                print ex
+            except Exception as ex:
+                print ex
 
     def send(self, packet):
         print packet[STATUS]
