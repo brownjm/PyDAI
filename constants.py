@@ -42,6 +42,7 @@ VENDOR = "vendor"
 MODEL = "model"
 SN = "sn"
 PROTOCOL = "protocol"
+TIMEOUT = "timeout"
 
 # Protocol types
 SIMULATED = "simulated"
