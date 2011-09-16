@@ -15,16 +15,14 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import threading
 import Queue
 import time, random
 import protocol
 import router
 from constants import GET, DELETE, EXEC, STATUS
 
-class Device(threading.Thread, router.Node):
+class Device(router.Node):
     def __init__(self, attributeDict, commandDict={}):
-        threading.Thread.__init__(self)
         self.name = ""
         self.attribute = attributeDict
         self.command = commandDict
@@ -47,14 +45,5 @@ class Device(threading.Thread, router.Node):
         pass
 
     def write(self, packet):
-        self.packetPool.put(packet)
-        if not self.isAlive():
-            self.start()
-
-    def run(self):
-        while not self.packetPool.empty():
-            packet = self.packetPool.get()
-            self.protocol.write(packet.data)
-
-        threading.Thread.__init__(self)
+        pass
 

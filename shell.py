@@ -17,25 +17,65 @@
 
 from executable import Executable
 from constants import EXIT, STATUS
+import curses
+import traceback
+from array import array
 
-class CommandLinePrompt(Executable):
+class CursesPrompt(Executable):
+    def __init__(self):
+        Executable.__init__(self)
+        self.screen = curses.initscr()
+        self.yx = self.screen.getmaxyx()
+        self.inputwin = curses.newwin(1, self.yx[1], self.yx[0]-1, 0)
+        self.outputwin = curses.newwin(self.yx[0]-1, self.yx[1], 0, 0)
+        self.outputwin.leaveok(1)
+        self.outputbuffer = array('c')
+
+    def __get_input(self, prompt_string):
+        self.inputwin.clear()
+        self.inputwin.addstr(0,0,prompt_string)
+        input = self.inputwin.getstr(0,len(prompt_string),60)
+        self.inputwin.refresh()
+        return input
+
+    def __update_display(self):
+        self.outputwin.clear()
+        while self.outputbuffer.count("\n") >= self.yx[0]-1:
+            self.outputbuffer.pop(0)
+        
+        self.outputwin.addstr(0,0,self.outputbuffer.tostring())
+        self.outputwin.refresh()
+
+    def addToOutput(self, outstr):
+        self.outputbuffer.fromstring(outstr)
+        self.outputbuffer.fromstring("\n")
+        self.__update_display()
+
     def run(self):
-        self.doWelcome()
-        while 1:
+        self.addToOutput(self.getWelcome())
+        line = self.__get_input(">")
+        while line != EXIT:
             try:
-                line = raw_input('> ')
-                if line == EXIT:
-                    break
                 if len(line) > 0:
                     self.execute(line)
-
             except Exception as ex:
-                print ex
+                self.addToOutput("Error Occured:\n")
+                self.addToOutput(traceback.format_exc())
+                #raise ex
+            finally:
+                line = self.__get_input(">")
+        curses.endwin()
 
     def send(self, packet):
-        print packet[STATUS]
+        self.addToOutput(repr(packet[STATUS]))
 
 
 if __name__ == '__main__':
-    CLP = CommandLinePrompt()
-    CLP.run()
+    try:
+        CP = CursesPrompt()
+        CP.run()
+    except Exception as ex:
+        curses.endwin()
+        tb = traceback.format_exc()
+        print "Catastrophic Error:\n"
+        print tb
