@@ -21,6 +21,7 @@ Nodes"""
 from collections import deque
 import threading
 import Queue
+from constants import QUERY, ROUTER, EXEC, STATUS
 
 class Packet(object):
     """Data bundle including destination information"""
@@ -66,6 +67,12 @@ class Router(object):
         """Send packet to next destination"""
         if len(packet.dest) == 0:
             return
+        if QUERY in packet.data:
+            device = packet.data[QUERY]
+            if device == ROUTER:
+                packet.next() # pop off ROUTER
+                packet.addDest(EXEC)
+                packet[STATUS] = str(self.devTable.keys())
 
         self.devTable[packet.next()].send(packet)
         #self.send(packet)
