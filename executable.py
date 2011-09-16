@@ -29,14 +29,14 @@ class Executable(router.Node):
 
         # create essential classes
         self.parser = parser.Parser(parser.commands, parser.rules)
-        router = router.Router()
+        r = router.Router()
         devman = devicemanager.DeviceManager()
-        env = env.Environment()
+        e = env.Environment()
 
         # make connections to router
-        router.connect(EXEC, self)
-        router.connect(DEVMAN, devman)
-        router.connect(ENV, env)
+        r.connect(EXEC, self)
+        r.connect(DEVMAN, devman)
+        r.connect(ENV, e)
 
     def run(self):
         raise Exception("Required to override")
