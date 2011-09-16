@@ -20,3 +20,4 @@ name   : getName   : string
 vendor : getVendor : string
 model  : getModel  : string
 sn     : getSN     : string
+data   : getData   : string
