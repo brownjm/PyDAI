@@ -14,3 +14,55 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""Module containing the user environment."""
+
+from collections import deque
+import router
+from constants import EXEC
+
+class Environment(router.Node):
+    """Class to represent the user environment."""
+    def __init__(self):
+        self.history = deque() # store command line history
+        self.variables = {}    # store user space variables
+
+    def addToHistory(self, line):
+        """Adds line to history"""
+        self.history.appendleft(line)
+
+    def getFromHistory(self, index):
+        """Get a line from history"""
+        if len(self.history) == 0:
+            return ""
+
+        elif index >= len(self.history):
+            return self.history[-1]
+
+        else:
+            return self.history[index]
+
+    def addVariable(self, varname, var):
+        """Store a variable"""
+        self.variables[varname] = var
+
+    def getVariable(self, varname):
+        """Retrieve a variable"""
+        return self.variables[varname]
+
+    def send(self, packet):
+        # just send a response that packet was received
+        packet.addDest(EXEC)
+        packet[STATUS] = "Packet received"
+        self.router.send(packet)
+
+if __name__ == "__main__":
+    env = Environment()
+    line = "hi how are you".split()
+    for word in line:
+        print word
+        env.addToHistory(word)
+
+    print "-----------------\n"
+    for n in range(6):
+        print env.getFromHistory(n)
