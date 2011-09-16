@@ -67,3 +67,23 @@ class Executable(router.Node):
 
     def _exit(self):
         print "Goodbye!!"
+
+
+class Helper(object):
+    """Object to give user access to doc strings within PyDAI."""
+    def __init__(self):
+        pass
+
+    def getCommandList(self):
+        """Return a list of available commands"""
+        pass
+
+    def getDocString(self, obj):
+        """Return information specific to an object"""
+        pass
+
+    def parse(self, line):
+        if "help" in line:
+            pass
+        if "?" in line:
+            pass
