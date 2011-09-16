@@ -25,7 +25,6 @@ from array import array
 class CursesPrompt(Executable):
     def __init__(self):
         Executable.__init__(self)
-        self.history = deque([], 10)
         self.screen = curses.initscr()
         self.yx = self.screen.getmaxyx()
         self.inputwin = curses.newwin(1, self.yx[1], self.yx[0]-1, 0)
@@ -43,7 +42,6 @@ class CursesPrompt(Executable):
     def __get_adv_input(self, prompt_string):
         self.inputwin.keypad(1)
         input = array('c')
-        histloc = -1
         self.inputwin.clear()
         self.inputwin.addstr(0,0,prompt_string)
 
@@ -52,23 +50,15 @@ class CursesPrompt(Executable):
             if i == curses.KEY_ENTER or i == 10:
                 break
             elif i == curses.KEY_UP:
-                if len(self.history) == 0:
-                    self.addToOutput("No Command History yet.")
-                elif histloc < len(self.history) - 1:
-                    histloc = histloc + 1
-                    self.__update_input(''.join([prompt_string, self.history[histloc]]))
-                    input = array('c')
-                    input.fromstring(self.history[histloc])
+                hist = self.env.prev()
+                self.__update_input(''.join([prompt_string, hist]))
+                input = array('c')
+                input.fromstring(hist)
             elif i == curses.KEY_DOWN:
-                if histloc > 0:
-                    histloc = histloc - 1
-                    self.__update_input(''.join([prompt_string, self.history[histloc]]))
-                    input = array('c')
-                    input.fromstring(self.history[histloc])
-                else:
-                    self.__update_input(prompt_string)
-                    input = array('c')
-                    histloc = -1
+                hist = self.env.next()
+                self.__update_input(''.join([prompt_string, hist]))
+                input = array('c')
+                input.fromstring(hist)
             elif i == curses.KEY_BACKSPACE:
                 if len(input) > 0:
                     input.pop()
@@ -108,7 +98,7 @@ class CursesPrompt(Executable):
                     self.execute(line)
 
                 line = self.__get_adv_input(">")
-                self.history.appendleft(line)
+                self.env.addToHistory(line)
             except Exception as ex:
                 self.addToOutput("Error Occured:\n")
                 self.addToOutput(traceback.format_exc())
