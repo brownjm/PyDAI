@@ -10,6 +10,7 @@ vendor   = DevFac
 model    = Simulator
 sn       = 0002
 protocol = simulated
+timeout  = 0.05
 
 # Device Commands
 # Commands have the following form
@@ -19,3 +20,4 @@ name   : getName   : string
 vendor : getVendor : string
 model  : getModel  : string
 sn     : getSN     : string
+data   : getData   : string

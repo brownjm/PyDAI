@@ -10,6 +10,7 @@ vendor   =
 model    =
 sn       =
 protocol = simulated
+timeout  = 0.05
 
 # Device Commands
 # Commands have the following form

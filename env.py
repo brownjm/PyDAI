@@ -21,26 +21,36 @@ from collections import deque
 import router
 from constants import EXEC
 
-class Environment(router.Node):
+class Environment(object):
     """Class to represent the user environment."""
     def __init__(self):
-        self.history = deque() # store command line history
-        self.variables = {}    # store user space variables
+        self.history = []   # store command line history
+        self.variables = {} # store user space variables
+        self.index = 0
+        self.length = 0
 
     def addToHistory(self, line):
         """Adds line to history"""
-        self.history.appendleft(line)
+        if line != self.prev():
+            self.history.append(line)
 
-    def getFromHistory(self, index):
-        """Get a line from history"""
-        if len(self.history) == 0:
+        self.index = self.length = len(self.history)
+
+    def next(self):
+        """Get next line from history"""
+        if self.length == 0 or self.index == self.length:
             return ""
-
-        elif index >= len(self.history):
-            return self.history[-1]
-
-        else:
-            return self.history[index]
+        if self.index < self.length:
+            self.index += 1
+        return self.history[self.index-1]
+        
+    def prev(self):
+        """Get previous line from history"""
+        if self.length == 0:
+            return ""
+        if self.index > 0:
+            self.index -= 1
+        return self.history[self.index]
 
     def addVariable(self, varname, var):
         """Store a variable"""
@@ -50,11 +60,6 @@ class Environment(router.Node):
         """Retrieve a variable"""
         return self.variables[varname]
 
-    def send(self, packet):
-        # just send a response that packet was received
-        packet.addDest(EXEC)
-        packet[STATUS] = "Packet received"
-        self.router.send(packet)
 
 if __name__ == "__main__":
     env = Environment()
@@ -65,4 +70,4 @@ if __name__ == "__main__":
 
     print "-----------------\n"
     for n in range(6):
-        print env.getFromHistory(n)
+        print env.prev()
