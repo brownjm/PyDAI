@@ -19,7 +19,8 @@ from collections import deque
 import router
 import devicemanager
 import parser
-from constants import EXIT, EXEC, DEVMAN
+import env
+from constants import EXIT, EXEC, DEVMAN, ENV
 
 class Executable(router.Node):
     def __init__(self):
@@ -27,13 +28,15 @@ class Executable(router.Node):
         self.commands = {EXIT : self._exit}
 
         # create essential classes
-        self.router = router.Router()
-        self.devman = devicemanager.DeviceManager()
         self.parser = parser.Parser(parser.commands, parser.rules)
+        router = router.Router()
+        devman = devicemanager.DeviceManager()
+        env = env.Environment()
 
         # make connections to router
-        self.router.connect(EXEC, self)
-        self.router.connect(DEVMAN, self.devman)
+        router.connect(EXEC, self)
+        router.connect(DEVMAN, devman)
+        router.connect(ENV, env)
 
     def run(self):
         raise Exception("Required to override")
@@ -61,4 +64,4 @@ class Executable(router.Node):
 """
 
     def _exit(self):
-        print 'Goodbye!!'
+        print "Goodbye!!"
