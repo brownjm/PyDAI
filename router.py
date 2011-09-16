@@ -21,7 +21,7 @@ Nodes"""
 from collections import deque
 import threading
 import Queue
-from constants import QUERY, ROUTER, EXEC, STATUS
+from constants import QUERY, ROUTER, EXEC, STATUS, FROM
 
 class Packet(object):
     """Data bundle including destination information"""
@@ -41,6 +41,7 @@ class Packet(object):
 
     def addDest(self, destination):
         """Add new destination into queue"""
+        self.data[FROM] = destination
         self.dest.append(destination)
 
     def next(self):
@@ -67,6 +68,8 @@ class Router(object):
         """Send packet to next destination"""
         if len(packet.dest) == 0:
             return
+
+        # check whether user is requesting info from Router itself
         if QUERY in packet.data:
             device = packet.data[QUERY]
             if device == ROUTER:
@@ -74,14 +77,17 @@ class Router(object):
                 packet.addDest(EXEC)
                 packet[STATUS] = str(self.devTable.keys())
 
+        if packet.data[FROM] not in self.devTable:
+            unknown = packet.next() # pop off unknown query target
+            packet.addDest(EXEC)
+            packet[STATUS] = "Target device not found: {}".format(unknown)
+
         self.devTable[packet.next()].send(packet)
-        #self.send(packet)
 
     def connect(self, device_name, device):
         device.router = self
         self.devTable[device_name] = WorkerThread(device)
         self.devTable[device_name].router = self
-        #self.devTable[device_name] = device
 
     def disconnect(self, device_name):
         deviceThread = self.devTable.pop(device_name)
