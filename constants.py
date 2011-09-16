@@ -22,27 +22,29 @@ DEVFOLDER = "devices"
 DEVTEMPLATE = "devicetemplate"
 
 # Names of devices
-DEVMAN = "devman"       # device manager
-EXEC = "exec"           # executable
-ROUTER = "router"       # router
-ENV = "env"             # environment
+DEVMAN    = "devman"     # device manager
+EXEC      = "exec"       # executable
+ROUTER    = "router"     # router
+ENV       = "env"        # environment
 
 # Commands
-NEW = "new"             # create something
-DELETE = "delete"       # delete something
-GET = "get"             # run command on device
-FROM = "from"           # sets destination
-QUERY = "query"         # request information
-STATUS = "status"       # reponse to user on status of received packet
-EXIT = "exit"           # exits program
+NEW       = "new"        # create something
+DELETE    = "delete"     # delete something
+GET       = "get"        # run command on device
+FROM      = "from"       # sets destination
+QUERY     = "query"      # request information
+STATUS    = "status"     # reponse to user on status of received packet
+EXIT      = "exit"       # exits program
+RETURN    = "return"     # return data
+TYPE      = "type"       # type of return data
 
 # Device configuration file constants
-NAME = "name"
-VENDOR = "vendor"
-MODEL = "model"
-SN = "sn"
-PROTOCOL = "protocol"
-TIMEOUT = "timeout"
+NAME      = "name"
+VENDOR    = "vendor"
+MODEL     = "model"
+SN        = "sn"
+PROTOCOL  = "protocol"
+TIMEOUT   = "timeout"    # time to wait between write and read of device
 
 # Protocol types
 SIMULATED = "simulated"
