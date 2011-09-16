@@ -19,6 +19,8 @@
 Nodes"""
 
 from collections import deque
+import threading
+import Queue
 
 class Packet(object):
     """Data bundle including destination information"""
@@ -66,16 +68,41 @@ class Router(object):
             return
 
         self.devTable[packet.next()].send(packet)
-        self.send(packet)
+        #self.send(packet)
 
     def connect(self, device_name, device):
         device.router = self
-        self.devTable[device_name] = device
+        self.devTable[device_name] = WorkerThread(device)
+        self.devTable[device_name].router = self
+        #self.devTable[device_name] = device
 
     def disconnect(self, device_name):
-        device = self.devTable.pop(device_name)
-        device.router = None
+        deviceThread = self.devTable.pop(device_name)
+        deviceThread.disconnect()
 
+
+class WorkerThread(threading.Thread):
+    def __init__(self, dev):
+        threading.Thread.__init__(self)
+        self.device = dev
+        self.packetPool = Queue.Queue()
+
+    def disconnect(self):
+        self.device = None
+
+    def send(self, packet):
+        self.packetPool.put(packet)
+        if not self.isAlive():
+            self.start()
+
+    def run(self):
+        while not self.packetPool.empty():
+            packet = self.packetPool.get();
+            self.device.send(packet)
+            if not len(packet.dest) == 0:
+                self.router.send(packet)
+
+        threading.Thread.__init__(self)
 
 if __name__ == "__main__":
     # create router
