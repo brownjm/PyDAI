@@ -17,7 +17,7 @@
 
 import Queue
 import router
-from devicefactory import DeviceFactory
+from devicefactory import DeviceFactory, FileNotFoundError
 from constants import NEW, EXEC, STATUS, DELETE, QUERY
 
 class DeviceManager(router.Node):
@@ -36,10 +36,15 @@ class DeviceManager(router.Node):
                 packet[STATUS] = msg
                 self.router.send(packet)
             else:
-                self.addDevice(name, name)
-                packet.addDest(EXEC)
-                packet[STATUS] = "Device created: {0}".format(name)
-                self.router.send(packet)
+                try:
+                    self.addDevice(name, name)
+                    packet.addDest(EXEC)
+                    packet[STATUS] = "Device created: {0}".format(name)
+                    self.router.send(packet)
+                except FileNotFoundError as ex:
+                    packet.addDest(EXEC)
+                    packet[STATUS] = ex.msg
+                    self.router.send(packet)
 
         elif DELETE in packet.data:
             name = packet.data[DELETE]

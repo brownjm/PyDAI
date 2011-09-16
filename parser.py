@@ -39,7 +39,7 @@ class Parser(object):
             return self._generatePacket(commands)
         else:
             names = [com.name for com in commands]
-            raise KeyError("Not a valid command set: {0}".format(names))
+            raise ParseError("Not a valid command set: {0}".format(names))
 
     def _createWordList(self, string):
         """Find the words within given string and create a list."""
@@ -51,7 +51,7 @@ class Parser(object):
         if wordList[0] in self.commands:
             return self.commands[wordList[0]](wordList)
         else:
-            raise KeyError("Command not recognized: {0}".format(wordList[0]))
+            raise ParseError("Command not recognized: {0}".format(wordList[0]))
 
     def _isValid(self, commands):
         self.comType = set([type(com) for com in commands])
@@ -63,6 +63,13 @@ class Parser(object):
         for command in commands:
             command.modPacket(packet)
         return packet
+
+
+class ParseError(Exception):
+    def __init__(self, message):
+        self.msg = message
+    def __str__(self):
+        return self.msg
 
 
 class Command(object):

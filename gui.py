@@ -18,7 +18,7 @@
 from Tkinter import *
 import traceback
 from executable import Executable
-from constants import EXIT, STATUS
+from constants import EXIT, STATUS, RETURN
 
 class Launcher(object):
     def run(self):
@@ -99,7 +99,10 @@ class PyDAI_GUI(Frame, Executable):
         self.textbox.see(END)
 
     def send(self, packet):
-        print packet[STATUS]
+        if STATUS in packet.data:
+            print packet[STATUS]
+        if RETURN in packet.data:
+            print packet[RETURN]
 
     def writePrompt(self):
         print self.prompt,

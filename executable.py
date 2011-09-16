@@ -44,9 +44,11 @@ class Executable(router.Node):
         if line == EXIT:
             self.commands[EXIT]()
             return
-
-        packet = self.parser.parse(line)
-        self.router.send(packet)
+        try:
+            packet = self.parser.parse(line)
+            self.router.send(packet)
+        except parser.ParseError as pe:
+            print pe
 
     def send(self, packet):
         raise Exception("Required to override")
