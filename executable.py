@@ -49,7 +49,10 @@ class Executable(router.Node):
         raise Exception("Required to override")
 
     def doWelcome(self):
-        print """
+        print self.getWelcome()
+
+    def getWelcome(self):
+        return """
 #    PyDAI
 #
 #    Copyright (C) 2011 Jeffrey M. Brown, Greg A Cohoon, Kyle T Taylor
