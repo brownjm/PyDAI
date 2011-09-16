@@ -19,11 +19,13 @@ from executable import Executable
 from constants import EXIT, STATUS
 import curses
 import traceback
+from collections import deque
 from array import array
 
 class CursesPrompt(Executable):
     def __init__(self):
         Executable.__init__(self)
+        self.history = deque([], 10)
         self.screen = curses.initscr()
         self.yx = self.screen.getmaxyx()
         self.inputwin = curses.newwin(1, self.yx[1], self.yx[0]-1, 0)
@@ -37,6 +39,52 @@ class CursesPrompt(Executable):
         input = self.inputwin.getstr(0,len(prompt_string),60)
         self.inputwin.refresh()
         return input
+
+    def __get_adv_input(self, prompt_string):
+        self.inputwin.keypad(1)
+        input = array('c')
+        histloc = -1
+        self.inputwin.clear()
+        self.inputwin.addstr(0,0,prompt_string)
+
+        while True:
+            i = self.inputwin.getch(0, len(prompt_string) + len(input))
+            if i == curses.KEY_ENTER or i == 10:
+                break
+            elif i == curses.KEY_UP:
+                if len(self.history) == 0:
+                    self.addToOutput("No Command History yet.")
+                elif histloc < len(self.history) - 1:
+                    histloc = histloc + 1
+                    self.__update_input(''.join([prompt_string, self.history[histloc]]))
+                    input = array('c')
+                    input.fromstring(self.history[histloc])
+            elif i == curses.KEY_DOWN:
+                if histloc > 0:
+                    histloc = histloc - 1
+                    self.__update_input(''.join([prompt_string, self.history[histloc]]))
+                    input = array('c')
+                    input.fromstring(self.history[histloc])
+                else:
+                    self.__update_input(prompt_string)
+                    input = array('c')
+                    histloc = -1
+            elif i == curses.KEY_BACKSPACE:
+                if len(input) > 0:
+                    input.pop()
+                    self.inputwin.delch(0,len(input)+1)
+            else:
+                try:
+                    input.append(chr(i))
+                except ValueError as ex:
+                    self.addToOutput("Key entry error.")
+
+        return input.tostring()
+
+    def __update_input(self, dispStr):
+        self.inputwin.clear()
+        self.inputwin.addstr(0,0,dispStr)
+        self.inputwin.refresh()
 
     def __update_display(self):
         self.outputwin.clear()
@@ -53,17 +101,19 @@ class CursesPrompt(Executable):
 
     def run(self):
         self.addToOutput(self.getWelcome())
-        line = self.__get_input(">")
+        line = ''
         while line != EXIT:
             try:
                 if len(line) > 0:
                     self.execute(line)
+
+                line = self.__get_adv_input(">")
+                self.history.appendleft(line)
             except Exception as ex:
                 self.addToOutput("Error Occured:\n")
                 self.addToOutput(traceback.format_exc())
-                #raise ex
-            finally:
-                line = self.__get_input(">")
+                line = ''
+
         curses.endwin()
 
     def send(self, packet):
