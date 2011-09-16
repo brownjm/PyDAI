@@ -25,6 +25,7 @@ DEVTEMPLATE = "devicetemplate"
 DEVMAN = "devman"       # device manager
 EXEC = "exec"           # executable
 ROUTER = "router"       # router
+ENV = "env"             # environment
 
 # Commands
 NEW = "new"             # create something
