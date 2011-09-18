@@ -16,7 +16,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from executable import Executable
-from constants import EXIT, STATUS, NEW, SOURCE, ERROR
+from constants import EXIT, STATUS, NEW, DELETE, SOURCE, ERROR
 import curses
 import traceback
 from collections import deque
@@ -63,6 +63,8 @@ class CursesPrompt(Executable):
                 self.__update_input(hist)
                 input = array('c')
                 input.fromstring(hist)
+            elif i == curses.KEY_LEFT or i == curses.KEY_RIGHT:
+                pass
             elif i == curses.KEY_BACKSPACE:
                 if len(input) > 0:
                     input.pop()
@@ -79,7 +81,8 @@ class CursesPrompt(Executable):
                 try:
                     input.append(chr(i))
                 except ValueError as ex:
-                    self.addToOutput("Key entry error.")
+                    self.addToOutput(self.currentWin, "Key entry error.")
+                    self.__update_display()
 
         return input.tostring()
 
@@ -118,26 +121,27 @@ class CursesPrompt(Executable):
     def addToOutput(self, win, outstr):
         self.deviceWins[win][1].fromstring(outstr)
         self.deviceWins[win][1].fromstring("\n")
-        while self.deviceWins[win][1].count("\n") >= self.yx[0]-1:
+        while self.deviceWins[win][1].count("\n") >= self.yx[0]-6:
             self.deviceWins[win][1].pop(0)
-        if win == self.currentWin:
-            self.__update_display()
-        else:
+        if not win == self.currentWin:
             self.deviceWins[win][0] = True
 
     def _view(self, args):
         if args[0].lower() in self.deviceWins:
-            self.addToOutput(self.currentWin, "Switching to " + args[0].title())
-            self.deviceWins[args[0].lower()][0] = False
-            self.currentWin = args[0].lower()
+            if args[0] == self.currentWin:
+                self.addToOutput(self.currentWin, "Already viewing {0}".format(args[0].title()))
+            else:
+                self.addToOutput(self.currentWin, "Switching to {0}".format(args[0].title()))
+                self.deviceWins[args[0].lower()][0] = False
+                self.currentWin = args[0].lower()
             self.__update_screen()
-            self.__update_display()
         else:
-            self.addToOutput(self.currentWin, "No window")
+            self.addToOutput(self.currentWin, "Window {0} does not exist.".format(args[0]))
+            self.__update_display()
 
     def run(self):
-        self.__update_screen()
         self.addToOutput("main", self.getWelcome())
+        self.__update_screen()
         line = ''
         while line != EXIT:
             try:
@@ -147,12 +151,17 @@ class CursesPrompt(Executable):
                 line = self.__get_adv_input(">")
                 self.env.addToHistory(line)
                 self.addToOutput(self.currentWin, ''.join([">>> ", line]))
+                self.__update_display()
             except Exception as ex:
-                self.addToOutput("main", "Error Occured:\n")
-                self.addToOutput("main", traceback.format_exc())
+                #self.addToOutput("main", "Error Occured:\n")
+                #self.addToOutput("main", traceback.format_exc())
+                raise ex
                 line = ''
 
         curses.endwin()
+
+    def _callback(self):
+        self.__update_screen()
 
     def send(self, packet):
         if ERROR in packet.data:
@@ -162,7 +171,10 @@ class CursesPrompt(Executable):
             if NEW in packet.data:
                 self.deviceWins[packet[SOURCE]] = [False, array('c')]
                 self.addToOutput(packet[SOURCE], repr(packet[STATUS]))
-                self.__update_screen()
+            if DELETE in packet.data:
+                if self.currentWin == packet[SOURCE]:
+                    self.currentWin = "main"
+                self.deviceWins.pop(packet[SOURCE])
 
 if __name__ == '__main__':
     try:
