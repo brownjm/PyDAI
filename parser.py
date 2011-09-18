@@ -19,7 +19,7 @@
 
 from collections import deque
 import router
-from constants import DEVMAN, NEW, DELETE, FROM, GET, QUERY
+from constants import EXEC, DEVMAN, NEW, DELETE, FROM, GET, QUERY
 
 class Parser(object):
     """Creates packets from input strings"""
@@ -97,7 +97,7 @@ class New(Command):
         Command.__init__(self, wordList, 1)
 
     def modPacket(self, packet):
-        packet.addDest(DEVMAN)
+        packet.addDest(EXEC, DEVMAN)
         packet[self.name] = self.args[0]
 
 class Delete(Command):
@@ -106,7 +106,7 @@ class Delete(Command):
         Command.__init__(self, wordList, 1)
 
     def modPacket(self, packet):
-        packet.addDest(DEVMAN)
+        packet.addDest(EXEC, DEVMAN)
         packet[self.name] = self.args[0]
 
 class From(Command):
@@ -115,7 +115,7 @@ class From(Command):
         Command.__init__(self, wordList, 1)
 
     def modPacket(self, packet):
-        packet.addDest(self.args[0])
+        packet.addDest(EXEC, self.args[0])
 
 class Get(Command):
     """Sends message to device"""
@@ -132,7 +132,7 @@ class Query(Command):
 
     def modPacket(self, packet):
         dev = self.args[0]
-        packet.addDest(dev)
+        packet.addDest(EXEC, dev)
         packet[self.name] = dev
 
 
