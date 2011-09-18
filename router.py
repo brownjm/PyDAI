@@ -59,6 +59,10 @@ Router"""
     def send(self, packet):
         raise AttributeError("Must overload send method")
 
+    def _callback(self):
+        """Method for asynch callbacks to perform post work updates, i.e. updating a UI"""
+        pass
+
 
 class Router(object):
     """Routes Packets to appropriate Device"""
@@ -117,6 +121,8 @@ class WorkerThread(threading.Thread):
                 self.router.send(packet)
 
         threading.Thread.__init__(self)
+        if not self.device == None:
+            self.device._callback()
 
 if __name__ == "__main__":
     pass
