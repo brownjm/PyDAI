@@ -16,12 +16,11 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from executable import Executable
-from constants import EXIT, STATUS
+from constants import EXIT, STATUS, NEW, SOURCE, ERROR
 import curses
 import traceback
 from collections import deque
 from array import array
-from constants import NEW
 
 class CursesPrompt(Executable):
     def __init__(self):
@@ -33,7 +32,7 @@ class CursesPrompt(Executable):
         self.inputwin = self.screen.subwin(1,self.yx[1]-4,self.yx[0]-2,3)
         self.outputwin = self.screen.subwin(self.yx[0]-6,self.yx[1]-3,3,2)
         self.outputwin.leaveok(1)
-        self.deviceWins = {"main": array('c')}
+        self.deviceWins = {"main": [False, array('c')]}
         self.currentWin = "main"
         
         self.outputbuffer = array('c')
@@ -96,12 +95,15 @@ class CursesPrompt(Executable):
         for win in header:
             if self.currentWin == win:
                 self.screen.addstr(1, left, win.title(), curses.A_UNDERLINE)
+            elif self.deviceWins[win][0] == True:
+                self.screen.addstr(1, left, win.title(), curses.A_REVERSE)
             else:
                 self.screen.addstr(1, left, win.title())
             left = left + len(win) + 3
 
         self.screen.addstr(self.yx[0]-2,1,">")
         self.screen.refresh()
+        self.__update_display()
 
     def __update_input(self, dispStr):
         self.inputwin.clear()
@@ -110,19 +112,23 @@ class CursesPrompt(Executable):
 
     def __update_display(self):
         self.outputwin.clear()
-        self.outputwin.addstr(0,0,self.deviceWins[self.currentWin].tostring())
+        self.outputwin.addstr(0,0,self.deviceWins[self.currentWin][1].tostring())
         self.outputwin.refresh()
 
     def addToOutput(self, win, outstr):
-        self.deviceWins[win].fromstring(outstr)
-        self.deviceWins[win].fromstring("\n")
-        while self.deviceWins[win].count("\n") >= self.yx[0]-1:
-            self.deviceWins[win].pop(0)
-        self.__update_display()
+        self.deviceWins[win][1].fromstring(outstr)
+        self.deviceWins[win][1].fromstring("\n")
+        while self.deviceWins[win][1].count("\n") >= self.yx[0]-1:
+            self.deviceWins[win][1].pop(0)
+        if win == self.currentWin:
+            self.__update_display()
+        else:
+            self.deviceWins[win][0] = True
 
     def _view(self, args):
         if args[0].lower() in self.deviceWins:
             self.addToOutput(self.currentWin, "Switching to " + args[0].title())
+            self.deviceWins[args[0].lower()][0] = False
             self.currentWin = args[0].lower()
             self.__update_screen()
             self.__update_display()
@@ -149,11 +155,14 @@ class CursesPrompt(Executable):
         curses.endwin()
 
     def send(self, packet):
-        if NEW in packet.data:
-            self.deviceWins["dev3"] = array('c')
-            self.__update_screen()
-        self.addToOutput("main", repr(packet[STATUS]))
-
+        if ERROR in packet.data:
+            self.addToOutput(self.currentWin, packet[ERROR])
+        else:
+            self.addToOutput("main", repr(packet[STATUS]))
+            if NEW in packet.data:
+                self.deviceWins[packet[SOURCE]] = [False, array('c')]
+                self.addToOutput(packet[SOURCE], repr(packet[STATUS]))
+                self.__update_screen()
 
 if __name__ == '__main__':
     try:
