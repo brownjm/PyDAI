@@ -19,7 +19,7 @@ import Queue
 import time, random
 import protocol
 import router
-from constants import GET, DELETE, EXEC, STATUS, TIMEOUT
+from constants import GET, DELETE, EXEC, STATUS, TIMEOUT, ERROR
 from constants import QUERY, NAME, MODEL, SN, RETURN, TYPE
 
 class Device(router.Node):
@@ -36,37 +36,37 @@ class Device(router.Node):
             request = packet.data[GET]
             if request in self.attribute:
                 data = self.attribute[request]
-                packet.addDest(EXEC)
+                packet.addDest(self.name, EXEC)
                 packet[RETURN] = data
+                packet[TYPE] = "string"
 
             elif request in self.command:
                 com, returnType = self.command[packet.data[GET]]
                 self.write(com)
                 time.sleep(float(self.attribute[TIMEOUT]))
                 response = self.read()
-                packet.addDest(EXEC)
-                packet[STATUS] = response
+                packet.addDest(self.name, EXEC)
+                packet[RETURN] = response
                 packet[TYPE] = returnType
 
             else:
-                packet.addDest(EXEC)
-                packet[STATUS] = "Dear User,\nI have no idea what you want me to do with this: {}\nSincerly,\n{}".format(request, self.name)
-                #packet[STATUS] = "Not a valid command for {}: {}".format(self.name, request)
+                packet.addDest(self.name, EXEC)
+                packet[ERROR] = "Not a valid command for {}: {}".format(self.name, request)
             
         elif DELETE in packet.data:
             name = packet.data[DELETE]
             self.router.disconnect(name)
-            packet.addDest(EXEC)
+            packet.addDest(self.name, EXEC)
             packet[STATUS] = "Device deleted: {}".format(name)
 
         elif QUERY in packet.data:
-            packet.addDest(EXEC)
+            packet.addDest(self.name, EXEC)
             att = self.attribute
             packet[STATUS] = "\n".join([att[NAME], att[MODEL], att[SN]])
 
         else:
-            packet.addDest(EXEC)
-            packet[STATUS] = "Congrats! You have gotten {} through all layers off security.\n-{}".format(request, self.name)
+            packet.addDest(self.name, EXEC)
+            packet[ERROR] = "Not a valid command for {}: {}".format(self.name, request)
 
         self.router.send(packet)
             

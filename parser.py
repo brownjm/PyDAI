@@ -19,7 +19,7 @@
 
 from collections import deque
 import router
-from constants import DEVMAN, NEW, DELETE, FROM, GET, QUERY
+from constants import EXEC, DEVMAN, NEW, DELETE, FROM, GET, QUERY
 
 class Parser(object):
     """Creates packets from input strings"""
@@ -92,33 +92,38 @@ class Command(object):
         return str(self.__class__) + " : " + ", ".join(self.args)
 
 class New(Command):
-    """Create command a new object"""
+    """Creates a new device from specified configuration file.
+Usage: new [config filename]
+"""
     def __init__(self, wordList):
         Command.__init__(self, wordList, 1)
 
     def modPacket(self, packet):
-        packet.addDest(DEVMAN)
+        packet.addDest(EXEC, DEVMAN)
         packet[self.name] = self.args[0]
 
 class Delete(Command):
-    """Deletion delete an object"""
+    """Removes the specified device.
+Usage: delete [device name]"""
     def __init__(self, wordList):
         Command.__init__(self, wordList, 1)
 
     def modPacket(self, packet):
-        packet.addDest(DEVMAN)
+        packet.addDest(EXEC, DEVMAN)
         packet[self.name] = self.args[0]
 
 class From(Command):
-    """Sets packets packet destination"""
+    """Sets the destination of a command.
+Usage: get [device command] from [device name]"""
     def __init__(self, wordList):
         Command.__init__(self, wordList, 1)
 
     def modPacket(self, packet):
-        packet.addDest(self.args[0])
+        packet.addDest(EXEC, self.args[0])
 
 class Get(Command):
-    """Sends message to device"""
+    """Request command from device.
+Usage: get [device command] from [device name]"""
     def __init__(self, wordList):
         Command.__init__(self, wordList, 1)
 
@@ -126,13 +131,14 @@ class Get(Command):
         packet[self.name] = self.args[0]
 
 class Query(Command):
-    """Query a device and receive information"""
+    """Request a device's information.
+Usage: query [device name]"""
     def __init__(self, wordList):
         Command.__init__(self, wordList, 1)
 
     def modPacket(self, packet):
         dev = self.args[0]
-        packet.addDest(dev)
+        packet.addDest(EXEC, dev)
         packet[self.name] = dev
 
 
