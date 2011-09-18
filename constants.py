@@ -37,6 +37,8 @@ STATUS    = "status"     # reponse to user on status of received packet
 EXIT      = "exit"       # exits program
 RETURN    = "return"     # return data
 TYPE      = "type"       # type of return data
+SOURCE    = "source"     # who sent the packet
+TARGET    = "target"     # who is the packet meant for
 
 # Device configuration file constants
 NAME      = "name"
