@@ -21,7 +21,7 @@ Nodes"""
 from collections import deque
 import threading
 import Queue
-from constants import QUERY, ROUTER, EXEC, STATUS, FROM, TARGET, SOURCE
+from constants import QUERY, ROUTER, EXEC, STATUS, FROM, TARGET, SOURCE, ERROR
 
 class Packet(object):
     """Data bundle including destination information"""
@@ -81,7 +81,7 @@ class Router(object):
         if packet.data[TARGET] not in self.devTable:
             unknown = packet.next() # pop off unknown target
             packet.addDest(ROUTER, EXEC)
-            packet[STATUS] = "Target device not found: {}".format(unknown)
+            packet[ERROR] = "Target device not found: {}".format(unknown)
 
         self.devTable[packet.next()].send(packet)
 

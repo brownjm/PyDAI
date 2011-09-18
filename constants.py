@@ -39,6 +39,7 @@ RETURN    = "return"     # return data
 TYPE      = "type"       # type of return data
 SOURCE    = "source"     # who sent the packet
 TARGET    = "target"     # who is the packet meant for
+ERROR     = "error"      # error message
 
 # Device configuration file constants
 NAME      = "name"

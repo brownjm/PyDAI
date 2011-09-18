@@ -18,7 +18,7 @@
 import Queue
 import router
 from devicefactory import DeviceFactory, FileNotFoundError
-from constants import NEW, EXEC, STATUS, DELETE, QUERY
+from constants import NEW, DEVMAN, EXEC, STATUS, DELETE, QUERY, ERROR
 
 class DeviceManager(router.Node):
     """Provides methods to handle installed devices."""
@@ -31,36 +31,38 @@ class DeviceManager(router.Node):
         if NEW in packet.data:
             name = packet.data[NEW]
             if name in self.deviceList:
-                packet.addDest(EXEC)
+                packet.addDest(DEVMAN, EXEC)
                 msg = "Device already created with the name: {0}".format(name)
-                packet[STATUS] = msg
-                self.router.send(packet)
+                packet[ERROR] = msg
+
             else:
                 try:
                     self.addDevice(name, name)
-                    packet.addDest(EXEC)
+                    packet.addDest(DEVMAN, EXEC)
                     packet[STATUS] = "Device created: {0}".format(name)
-                    self.router.send(packet)
+
                 except FileNotFoundError as ex:
-                    packet.addDest(EXEC)
-                    packet[STATUS] = ex.msg
-                    self.router.send(packet)
+                    packet.addDest(DEVMAN, EXEC)
+                    packet[ERROR] = ex.msg
 
         elif DELETE in packet.data:
             name = packet.data[DELETE]
             if not name in self.deviceList:
-                packet.addDest(EXEC)
+                packet.addDest(DEVMAN, EXEC)
                 msg = "Device does not exist: {0}".format(name)
-                packet[STATUS] = msg
-                self.router.send(packet)
+                packet[ERROR] = msg
             else:
                 self.removeDevice(name, packet)
                 
         elif QUERY in packet.data:
-            packet.addDest(EXEC)
+            packet.addDest(DEVMAN, EXEC)
             packet[STATUS] = str(self.deviceList)
-            self.router.send(packet)
             
+        else:
+            packet.addDest(DEVMAN, EXEC)
+            packet[ERROR] = "{} cannot do anything with packet:\n{}".format(DEVMAN, packet)
+
+        self.router.send(packet)
 
     def addDevice(self, filename, username):
         d = self.devFac.constructDevice(filename)
@@ -69,7 +71,7 @@ class DeviceManager(router.Node):
         self.deviceList.append(username)
     
     def removeDevice(self, username, packet):
-        packet.addDest(username)
+        packet.addDest(DEVMAN, username)
         self.deviceList.remove(username)
         self.router.send(packet)
 
