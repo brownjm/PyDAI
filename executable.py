@@ -119,7 +119,7 @@ classes."""
             return "No help for this command is available: {}".format(name)
 
     def helpmessage(self):
-        help = "Here are the available commands:\n{}\nTo receive more info on a command: help (command) or (command)?".format(self.getCommands())
+        help = "Here are the available commands:\n{}\nTo receive more info on a command: \'help command\' or \'command?\'".format(self.getCommands())
         return help
 
     def trim(self, docstring):
@@ -152,3 +152,6 @@ Code example from PEP257"""
 
 if __name__ == "__main__":
     h = Helper(parser.commands)
+    print h.help("help")
+    for command in parser.commands.keys():
+        print h.help("help {}".format(command)), '\n'
