@@ -38,7 +38,7 @@ class DeviceManager(router.Node):
             else:
                 try:
                     self.addDevice(name, name)
-                    packet.addDest(DEVMAN, EXEC)
+                    packet.addDest(name, EXEC)
                     packet[STATUS] = "Device created: {0}".format(name)
 
                 except FileNotFoundError as ex:
