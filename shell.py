@@ -65,6 +65,9 @@ class CursesPrompt(Executable):
                 input.fromstring(hist)
             elif i == curses.KEY_LEFT or i == curses.KEY_RIGHT:
                 pass
+            elif i == 554 or i == 539:
+                #Control-Right or Control-Left
+                self._movewin(i)
             elif i == curses.KEY_BACKSPACE:
                 if len(input) > 0:
                     input.pop()
@@ -125,6 +128,22 @@ class CursesPrompt(Executable):
             self.deviceWins[win][1].pop(0)
         if not win == self.currentWin:
             self.deviceWins[win][0] = True
+
+    def _movewin(self, direction):
+        wins = self.deviceWins.keys()
+        if len(wins) == 1:
+            return
+
+        wins.reverse()
+        cw = wins.index(self.currentWin)
+        if direction == 554:
+            cw = cw + 1
+        elif direction == 539:
+            cw = cw - 1
+        if cw >= 0 and cw < len(wins):
+            self.currentWin = wins[cw]
+            self.deviceWins[self.currentWin][0] = False
+            self.__update_screen()
 
     def _view(self, args):
         if args[0].lower() in self.deviceWins:
