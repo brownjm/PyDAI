@@ -41,8 +41,10 @@ class Executable(router.Node):
         raise Exception("Required to override")
 
     def execute(self, line):
-        if line == EXIT:
-            self.commands[EXIT]()
+        command = line.split(' ')[0]
+        args = line.split(' ')[1:]
+        if command in self.commands:
+            self.commands[command](args)
             return
         try:
             packet = self.parser.parse(line)
