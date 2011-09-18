@@ -21,7 +21,7 @@ Nodes"""
 from collections import deque
 import threading
 import Queue
-from constants import QUERY, ROUTER, EXEC, STATUS, FROM
+from constants import QUERY, ROUTER, EXEC, STATUS, FROM, TARGET, SOURCE
 
 class Packet(object):
     """Data bundle including destination information"""
@@ -39,10 +39,11 @@ class Packet(object):
     def __setitem__(self, key, val):
         self.data[key] = val
 
-    def addDest(self, destination):
+    def addDest(self, source, target):
         """Add new destination into queue"""
-        self.data[FROM] = destination
-        self.dest.append(destination)
+        self.data[SOURCE] = source
+        self.data[TARGET] = target
+        self.dest.append(target)
 
     def next(self):
         """Return name of next destination"""
@@ -74,12 +75,12 @@ class Router(object):
             device = packet.data[QUERY]
             if device == ROUTER:
                 packet.next() # pop off ROUTER
-                packet.addDest(EXEC)
+                packet.addDest(ROUTER, EXEC)
                 packet[STATUS] = str(self.devTable.keys())
 
-        if packet.data[FROM] not in self.devTable:
-            unknown = packet.next() # pop off unknown query target
-            packet.addDest(EXEC)
+        if packet.data[TARGET] not in self.devTable:
+            unknown = packet.next() # pop off unknown target
+            packet.addDest(ROUTER, EXEC)
             packet[STATUS] = "Target device not found: {}".format(unknown)
 
         self.devTable[packet.next()].send(packet)
@@ -118,34 +119,4 @@ class WorkerThread(threading.Thread):
         threading.Thread.__init__(self)
 
 if __name__ == "__main__":
-    # create router
-    r = Router()
-
-    # create a test device
-    class testdev(Node):
-        def __init__(self):
-            Node.__init__(self)
-
-        def send(self, packet):
-            print packet
-            if len(packet.dest) > 0:
-                self.router.send(packet)
-
-    a = testdev()
-    b = testdev()
-    c = testdev()
-
-    # connect devices
-    r.connect('a', a)
-    r.connect('b', b)
-    r.connect('c', c)
-
-    # create packet
-    p = Packet()
-    p.addDest('a')
-    p.addDest('b')
-    p.addDest('c')
-    p["data"] = 1
-
-    # send initial packet to router
-    r.send(p)
+    pass
