@@ -20,6 +20,7 @@
 from collections import deque
 import router
 from constants import EXEC, DEVMAN, NEW, DELETE, FROM, GET, QUERY
+from constants import EXIT, HELP, VIEW
 
 class Parser(object):
     """Creates packets from input strings"""
@@ -30,13 +31,18 @@ class Parser(object):
     def parse(self, string):
         """Create a packet from the input string"""
         words = self._createWordList(string)
-
         commands = []
         while len(words) > 0:
             commands.append(self._constructCommand(words))
+        return commands
 
+    def package(self, commands):
+        """Use commands to create a Packet"""
         if self._isValid(commands):
-            return self._generatePacket(commands)
+            packet = router.Packet()
+            for command in commands:
+                command.modPacket(packet)
+            return packet
         else:
             names = [com.name for com in commands]
             raise ParseError("Not a valid command set: {0}".format(names))
@@ -57,13 +63,6 @@ class Parser(object):
         self.comType = set([type(com) for com in commands])
         return self.comType in rules
 
-    def _generatePacket(self, commands):
-        """Use commands to create a Packet"""
-        packet = router.Packet()
-        for command in commands:
-            command.modPacket(packet)
-        return packet
-
 
 class ParseError(Exception):
     def __init__(self, message):
@@ -80,16 +79,17 @@ class Command(object):
         self.args = []
         if len(wordList) < nargs:
             msg = "Command '{0}' expected {1} argument(s) and received {2}"
-            raise Exception(msg.format(self.name, nargs, len(wordList)))
+            raise ParseError(msg.format(self.name, nargs, len(wordList)))
 
         for n in range(nargs):
             self.args.append(wordList.popleft())
 
     def modPacket(self, packet):
-        raise Exception("Must overload method which modifies packet")
+        raise ParseError("Cannot create a packet from: {}".format(self.name))
 
     def __str__(self):
-        return str(self.__class__) + " : " + ", ".join(self.args)
+        return "{}({})".format(self.name, self.args)
+
 
 class New(Command):
     """Creates a new device from specified configuration file.
@@ -141,6 +141,27 @@ Usage: query [device name]"""
         packet.addDest(EXEC, dev)
         packet[self.name] = dev
 
+class Exit(Command):
+    """Exits the program.
+Usage: exit"""
+    def __init__(self, wordList):
+        Command.__init__(self, wordList, 0)
+
+class Help(Command):
+    """Provides helpful information about commands.
+Usage: help or help [command name]"""
+    def __init__(self, wordList):
+        if len(wordList) == 1: # help with no arguments
+            Command.__init__(self, wordList, 0)
+        else:
+            Command.__init__(self, wordList, 1)
+
+class View(Command):
+    """Switches focus to specified window.
+Usage: view [window name]"""
+    def __init__(self, wordList):
+        Command.__init__(self, wordList, 1)
+
 
 # dictionary of available commands
 # user defined name:  associated class
@@ -148,18 +169,23 @@ commands = {NEW: New,
             DELETE: Delete,
             FROM: From,
             GET: Get,
-            QUERY: Query}
+            QUERY: Query,
+            EXIT: Exit,
+            HELP: Help,
+            VIEW: View}
 
-# sets of commands that constitute a complete packets
+# sets of commands that constitute a complete packet
 rules = [set([New]),
          set([Delete]),
          set([Get, From]),
-         set([Query])]
+         set([Query]),
+         set([Exit]),
+         set([Help]),
+         set([View])]
 
 
 if __name__ == "__main__":
     p = Parser(commands, rules)
     
-    print p.parse("new dev1")
-    print p.parse("get waveform from dev1")
-    print p.parse("delete dev1")
+    com = p.parse("new dev1")
+    packet = p.package(com)
