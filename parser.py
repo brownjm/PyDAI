@@ -79,13 +79,13 @@ class Command(object):
         self.args = []
         if len(wordList) < nargs:
             msg = "Command '{0}' expected {1} argument(s) and received {2}"
-            raise Exception(msg.format(self.name, nargs, len(wordList)))
+            raise ParseError(msg.format(self.name, nargs, len(wordList)))
 
         for n in range(nargs):
             self.args.append(wordList.popleft())
 
     def modPacket(self, packet):
-        raise Exception("Must overload method which modifies packet")
+        raise ParseError("Cannot create a packet from: {}".format(self.name))
 
     def __str__(self):
         return "{}({})".format(self.name, self.args)
@@ -166,7 +166,7 @@ commands = {NEW: New,
             EXIT: Exit,
             HELP: Help}
 
-# sets of commands that constitute a complete packets
+# sets of commands that constitute a complete packet
 rules = [set([New]),
          set([Delete]),
          set([Get, From]),
