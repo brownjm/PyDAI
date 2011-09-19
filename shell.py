@@ -27,15 +27,15 @@ class CursesPrompt(Executable):
         Executable.__init__(self)
         self.commands["view"] = self._view
         self.stdscr = curses.initscr()
+        curses.curs_set(0)
         self.yx = self.stdscr.getmaxyx()
-        self.screen = self.stdscr.subwin(self.yx[0],self.yx[1],0,0)
-        self.inputwin = self.screen.subwin(1,self.yx[1]-4,self.yx[0]-2,3)
-        self.outputwin = self.screen.subwin(self.yx[0]-6,self.yx[1]-3,3,2)
-        self.outputwin.leaveok(1)
+        self.screen = curses.newwin(self.yx[0],self.yx[1],0,0)
+        self.outputwin = self.screen.subwin(self.yx[0]-6, self.yx[1]-2, 3, 1)
+        self.screen.keypad(1)
+        self.screen.nodelay(1)
+        self.screen.timeout(50)
         self.deviceWins = {"main": [False, array('c')]}
         self.currentWin = "main"
-        
-        self.outputbuffer = array('c')
 
     def __get_input(self, prompt_string):
         self.inputwin.clear()
@@ -44,23 +44,19 @@ class CursesPrompt(Executable):
         self.inputwin.refresh()
         return input
 
-    def __get_adv_input(self, prompt_string):
-        self.inputwin.keypad(1)
+    def __main_loop(self, prompt_string):
         input = array('c')
 
-        while True:
-            i = self.inputwin.getch(0, len(input))
+        while 1:
+            i = self.screen.getch(self.yx[0]-2, len(input))
             if i == curses.KEY_ENTER or i == 10:
-                self.inputwin.clear()
                 break
             elif i == curses.KEY_UP:
                 hist = self.env.prev()
-                self.__update_input(hist)
                 input = array('c')
                 input.fromstring(hist)
             elif i == curses.KEY_DOWN:
                 hist = self.env.next()
-                self.__update_input(hist)
                 input = array('c')
                 input.fromstring(hist)
             elif i == curses.KEY_LEFT or i == curses.KEY_RIGHT:
@@ -71,25 +67,20 @@ class CursesPrompt(Executable):
             elif i == curses.KEY_BACKSPACE:
                 if len(input) > 0:
                     input.pop()
-                    self.inputwin.delch(0,len(input))
             elif i == curses.KEY_RESIZE:
                 self.yx = self.stdscr.getmaxyx()
                 self.screen.resize(self.yx[0],self.yx[1])
-                self.inputwin.mvwin(self.yx[0]-2,3)
-                self.inputwin.resize(1,self.yx[1]-4)
-                self.outputwin.resize(self.yx[0]-6,self.yx[1]-3)
-                self.__update_screen()
-                self.__update_display()
-            else:
+            elif not i == -1:
                 try:
                     input.append(chr(i))
                 except ValueError as ex:
                     self.addToOutput(self.currentWin, "Key entry error.")
-                    self.__update_display()
+            self.__update_screen(input.tostring())
+            curses.doupdate()
 
         return input.tostring()
 
-    def __update_screen(self):
+    def __update_screen(self, inp):
         self.screen.clear()
         self.screen.box()
         self.screen.hline(2,1,curses.ACS_HLINE,self.yx[1]-2)
@@ -108,18 +99,18 @@ class CursesPrompt(Executable):
             left = left + len(win) + 3
 
         self.screen.addstr(self.yx[0]-2,1,">")
-        self.screen.refresh()
         self.__update_display()
+        self.__update_input(inp)
+        self.screen.noutrefresh()
 
     def __update_input(self, dispStr):
-        self.inputwin.clear()
-        self.inputwin.addstr(0,0,dispStr)
-        self.inputwin.refresh()
+        self.screen.addstr(self.yx[0] - 2, 3, dispStr)
+        self.screen.addstr(self.yx[0] - 2, len(dispStr) + 3, ' ', curses.A_REVERSE)
 
     def __update_display(self):
         self.outputwin.clear()
         self.outputwin.addstr(0,0,self.deviceWins[self.currentWin][1].tostring())
-        self.outputwin.refresh()
+        self.outputwin.noutrefresh()
 
     def addToOutput(self, win, outstr):
         self.deviceWins[win][1].fromstring(outstr)
@@ -143,7 +134,6 @@ class CursesPrompt(Executable):
         if cw >= 0 and cw < len(wins):
             self.currentWin = wins[cw]
             self.deviceWins[self.currentWin][0] = False
-            self.__update_screen()
 
     def _view(self, args):
         if args.args[0].lower() in self.deviceWins:
@@ -153,35 +143,30 @@ class CursesPrompt(Executable):
                 self.addToOutput(self.currentWin, "Switching to {0}".format(args.args[0].title()))
                 self.deviceWins[args.args[0].lower()][0] = False
                 self.currentWin = args.args[0].lower()
-            self.__update_screen()
         else:
             self.addToOutput(self.currentWin, "Window {0} does not exist.".format(args.args[0]))
-            self.__update_display()
 
     def run(self):
         self.addToOutput("main", self.getWelcome())
-        self.__update_screen()
         line = ''
         while line != EXIT:
             try:
                 if len(line) > 0:
                     self.execute(line)
 
-                line = self.__get_adv_input(">")
+                line = self.__main_loop(">")
                 self.env.addToHistory(line)
                 self.addToOutput(self.currentWin, ''.join([">>> ", line]))
-                self.__update_display()
             except Exception as ex:
                 self.addToOutput("main", "Error Occured:\n")
                 self.addToOutput("main", traceback.format_exc())
-                self.__update_display()
                 #raise ex
                 line = ''
 
         curses.endwin()
 
     def _callback(self):
-        self.__update_screen()
+        pass
 
     def send(self, packet):
         if ERROR in packet.data:
