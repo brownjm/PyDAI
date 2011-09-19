@@ -15,7 +15,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Module to hold program wide constants"""
+"""Module holds program-wide constants"""
 
 # Names of files and directories
 DEVFOLDER = "devices"
@@ -27,20 +27,22 @@ EXEC      = "exec"       # executable
 ROUTER    = "router"     # router
 ENV       = "env"        # environment
 
-# Commands
+# User Commands
 NEW       = "new"        # create something
 DELETE    = "delete"     # delete something
 GET       = "get"        # run command on device
 FROM      = "from"       # sets destination
 QUERY     = "query"      # request information
-STATUS    = "status"     # reponse to user on status of received packet
+HELP      = "help"       # command to print helpful messages
 EXIT      = "exit"       # exits program
+
+# Internal constants
+STATUS    = "status"     # reponse to user on status of received packet
 RETURN    = "return"     # return data
 TYPE      = "type"       # type of return data
 SOURCE    = "source"     # who sent the packet
 TARGET    = "target"     # who is the packet meant for
 ERROR     = "error"      # error message
-HELP      = "help"       # command to print helpful messages
 
 # Device configuration file constants
 NAME      = "name"
