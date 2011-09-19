@@ -87,8 +87,7 @@ class Command(object):
         raise Exception("Must overload method which modifies packet")
 
     def __str__(self):
-        args = ", ".join(self.args)
-        return "{}({})".format(self.name, args)
+        return "{}({})".format(self.name, self.args)
 
 
 class New(Command):
