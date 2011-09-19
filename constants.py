@@ -30,8 +30,8 @@ ENV       = "env"        # environment
 # User Commands
 NEW       = "new"        # create something
 DELETE    = "delete"     # delete something
-GET       = "get"        # run command on device
-FROM      = "from"       # sets destination
+SEND      = "send"       # sends command to device
+TO        = "to"         # sets destination
 QUERY     = "query"      # request information
 HELP      = "help"       # command to print helpful messages
 EXIT      = "exit"       # exits program

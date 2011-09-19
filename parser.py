@@ -19,7 +19,7 @@
 
 from collections import deque
 import router
-from constants import EXEC, DEVMAN, NEW, DELETE, FROM, GET, QUERY
+from constants import EXEC, DEVMAN, NEW, DELETE, SEND, TO, QUERY
 from constants import EXIT, HELP, VIEW
 
 class Parser(object):
@@ -112,23 +112,23 @@ Usage: delete [device name]"""
         packet.addDest(EXEC, DEVMAN)
         packet[self.name] = self.args[0]
 
-class From(Command):
-    """Sets the destination of a command.
-Usage: get [device command] from [device name]"""
-    def __init__(self, wordList):
-        Command.__init__(self, wordList, 1)
-
-    def modPacket(self, packet):
-        packet.addDest(EXEC, self.args[0])
-
-class Get(Command):
-    """Request command from device.
-Usage: get [device command] from [device name]"""
+class Send(Command):
+    """Send a command to a device.
+Usage: send [device command] to [device name]"""
     def __init__(self, wordList):
         Command.__init__(self, wordList, 1)
 
     def modPacket(self, packet):
         packet[self.name] = self.args[0]
+
+class To(Command):
+    """Sets the destination of a command.
+Usage: send [device command] to [device name]"""
+    def __init__(self, wordList):
+        Command.__init__(self, wordList, 1)
+
+    def modPacket(self, packet):
+        packet.addDest(EXEC, self.args[0])
 
 class Query(Command):
     """Request a device's information.
@@ -167,8 +167,8 @@ Usage: view [window name]"""
 # user defined name:  associated class
 commands = {NEW: New,
             DELETE: Delete,
-            FROM: From,
-            GET: Get,
+            SEND: Send,
+            TO: To,
             QUERY: Query,
             EXIT: Exit,
             HELP: Help,
@@ -177,7 +177,7 @@ commands = {NEW: New,
 # sets of commands that constitute a complete packet
 rules = [set([New]),
          set([Delete]),
-         set([Get, From]),
+         set([Send, To]),
          set([Query]),
          set([Exit]),
          set([Help]),

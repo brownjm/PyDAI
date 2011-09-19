@@ -21,7 +21,7 @@ Nodes"""
 from collections import deque
 import threading
 import Queue
-from constants import QUERY, ROUTER, EXEC, STATUS, FROM, TARGET, SOURCE, ERROR
+from constants import QUERY, ROUTER, EXEC, STATUS, TARGET, SOURCE, ERROR
 
 class Packet(object):
     """Data bundle including destination information"""
