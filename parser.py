@@ -30,13 +30,18 @@ class Parser(object):
     def parse(self, string):
         """Create a packet from the input string"""
         words = self._createWordList(string)
-
         commands = []
         while len(words) > 0:
             commands.append(self._constructCommand(words))
+        return commands
 
+    def package(self, commands):
+        """Use commands to create a Packet"""
         if self._isValid(commands):
-            return self._generatePacket(commands)
+            packet = router.Packet()
+            for command in commands:
+                command.modPacket(packet)
+            return packet
         else:
             names = [com.name for com in commands]
             raise ParseError("Not a valid command set: {0}".format(names))
@@ -56,13 +61,6 @@ class Parser(object):
     def _isValid(self, commands):
         self.comType = set([type(com) for com in commands])
         return self.comType in rules
-
-    def _generatePacket(self, commands):
-        """Use commands to create a Packet"""
-        packet = router.Packet()
-        for command in commands:
-            command.modPacket(packet)
-        return packet
 
 
 class ParseError(Exception):
@@ -89,7 +87,9 @@ class Command(object):
         raise Exception("Must overload method which modifies packet")
 
     def __str__(self):
-        return str(self.__class__) + " : " + ", ".join(self.args)
+        args = ", ".join(self.args)
+        return "{}({})".format(self.name, args)
+
 
 class New(Command):
     """Creates a new device from specified configuration file.
@@ -160,6 +160,5 @@ rules = [set([New]),
 if __name__ == "__main__":
     p = Parser(commands, rules)
     
-    print p.parse("new dev1")
-    print p.parse("get waveform from dev1")
-    print p.parse("delete dev1")
+    com = p.parse("new dev1")
+    packet = p.package(com)
