@@ -20,6 +20,7 @@
 from collections import deque
 import router
 from constants import EXEC, DEVMAN, NEW, DELETE, FROM, GET, QUERY
+from constants import EXIT, HELP
 
 class Parser(object):
     """Creates packets from input strings"""
@@ -140,6 +141,20 @@ Usage: query [device name]"""
         packet.addDest(EXEC, dev)
         packet[self.name] = dev
 
+class Exit(Command):
+    """Exits the program.
+Usage: exit"""
+    def __init__(self, wordList):
+        Command.__init__(self, wordList, 0)
+
+class Help(Command):
+    """Provides helpful information about commands.
+Usage: help or help [command name]"""
+    def __init__(self, wordList):
+        if len(wordList) == 1: # help with no arguments
+            Command.__init__(self, wordList, 0)
+        else:
+            Command.__init__(self, wordList, 1)
 
 # dictionary of available commands
 # user defined name:  associated class
@@ -147,13 +162,17 @@ commands = {NEW: New,
             DELETE: Delete,
             FROM: From,
             GET: Get,
-            QUERY: Query}
+            QUERY: Query,
+            EXIT: Exit,
+            HELP: Help}
 
 # sets of commands that constitute a complete packets
 rules = [set([New]),
          set([Delete]),
          set([Get, From]),
-         set([Query])]
+         set([Query]),
+         set([Exit]),
+         set([Help])]
 
 
 if __name__ == "__main__":
