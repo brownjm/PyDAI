@@ -36,6 +36,7 @@ QUERY     = "query"      # request information
 HELP      = "help"       # command to print helpful messages
 EXIT      = "exit"       # exits program
 VIEW      = "view"       # switch view to specified window
+MAIN      = "main"       # main window name
 
 # Internal constants
 STATUS    = "status"     # reponse to user on status of received packet
