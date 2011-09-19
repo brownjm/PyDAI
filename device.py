@@ -19,7 +19,7 @@ import Queue
 import time, random
 import protocol
 import router
-from constants import GET, DELETE, EXEC, STATUS, TIMEOUT, ERROR
+from constants import SEND, DELETE, EXEC, STATUS, TIMEOUT, ERROR
 from constants import QUERY, NAME, MODEL, SN, RETURN, TYPE
 
 class Device(router.Node):
@@ -32,8 +32,8 @@ class Device(router.Node):
         self.protocol.open()
 
     def send(self, packet):
-        if GET in packet.data:
-            request = packet.data[GET]
+        if SEND in packet.data:
+            request = packet.data[SEND]
             if request in self.attribute:
                 data = self.attribute[request]
                 packet.addDest(self.name, EXEC)
@@ -41,7 +41,7 @@ class Device(router.Node):
                 packet[TYPE] = "string"
 
             elif request in self.command:
-                com, returnType = self.command[packet.data[GET]]
+                com, returnType = self.command[packet.data[SEND]]
                 self.write(com)
                 time.sleep(float(self.attribute[TIMEOUT]))
                 response = self.read()
