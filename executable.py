@@ -85,46 +85,26 @@ class Helper(object):
 classes."""
         self.commandDict = {}
         for name, commandClass in commandDict.iteritems():
-            self.commandDict[name] = self.trim(commandClass.__doc__)
+            self.commandDict[name] = self._trim(commandClass.__doc__)
 
-    def help(self, line):
+    def help(self, helpCommand):
         """Get help on the line"""
-        if HELP in line:
-            words = line.split()
-            if len(words) == 1:
-                return self.helpmessage()
-            else:
-                commandName = words[1]
-                return self.getDocstring(commandName)
-        elif "?" in line:
-            words = line.split()
-            for word in words:
-                if word == "?":
-                    return self.helpmessage()
-                elif word.endswith("?"):
-                    commandName = word[:-1]
-                    return self.getDocstring(commandName)
-                else:
-                    return self.getDocstring(word)
+        if len(helpCommand.args) == 0:
+            return self._helpmessage()
         else:
-            return line
+            return self._getDocstring(helpCommand.args[0])
 
-    def getCommands(self):
-        """Return a list of available commands"""
-        return self.commandDict.keys()
-
-    def getDocstring(self, name):
+    def _getDocstring(self, name):
         """Return information specific to an object"""
         if name in self.commandDict:
             return self.commandDict[name]
         else:
             return "No help for this command is available: {}".format(name)
 
-    def helpmessage(self):
-        help = "Here are the available commands:\n{}\nTo receive more info on a command: \'help command\' or \'command?\'".format(self.getCommands())
-        return help
+    def _helpmessage(self):
+        return "Here are the available commands:\n{}\nTo receive more info on a command: help [command]".format(self.commandDict.keys())
 
-    def trim(self, docstring):
+    def _trim(self, docstring):
         """Removes newlines, aligns indentations, removes whitespace. 
 Code example from PEP257"""
         if not docstring:
@@ -154,6 +134,4 @@ Code example from PEP257"""
 
 if __name__ == "__main__":
     h = Helper(parser.commands)
-    print h.help("help")
-    for command in parser.commands.keys():
-        print h.help("help {}".format(command)), '\n'
+    
