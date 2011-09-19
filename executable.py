@@ -25,13 +25,14 @@ from constants import EXIT, EXEC, DEVMAN, ENV, HELP
 
 class Executable(router.Node):
     def __init__(self):
+        self.helper = Helper(parser.commands)
         # commands specific to executable
-        self.commands = {EXIT : self._exit}
+        self.commands = {EXIT : self._exit,
+                         HELP : self.helper.help}
 
         # create essential classes
         self.parser = parser.Parser(parser.commands, parser.rules)
         self.env = env.Environment()
-        self.helper = Helper(parser.commands)
         r = router.Router()
         devman = devicemanager.DeviceManager()
 
@@ -43,21 +44,16 @@ class Executable(router.Node):
         raise Exception("Required to override")
 
     def execute(self, line):
-        command = line.split(' ')[0]
-        args = line.split(' ')[1:]
-        if command in self.commands:
-            self.commands[command](args)
-            return
-
-        elif HELP in line or "?" in line:
-            print self.helper.help(line)
-
-        else:
-            try:
-                packet = self.parser.parse(line)
-                self.router.send(packet)
-            except parser.ParseError as pe:
-                print pe
+        commandList = self.parser.parse(line)
+        for command in commandList:
+            if command.name in self.commands:
+                self.commands[command.name](command)
+        
+        try:
+            packet = self.parser.package(commandList)
+            self.router.send(packet)
+        except parser.ParseError as pe:
+            print pe
 
     def send(self, packet):
         raise Exception("Required to override")
@@ -74,8 +70,8 @@ class Executable(router.Node):
 #    Type 'exit' to quit.
 """
 
-    def _exit(self):
-        print "Goodbye!!"
+    def _exit(self, *args):
+        return "Goodbye!!"
 
 
 class Helper(object):
