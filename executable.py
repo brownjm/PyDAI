@@ -25,6 +25,7 @@ from constants import EXIT, EXEC, DEVMAN, ENV, HELP
 
 class Executable(router.Node):
     def __init__(self):
+        self.helper = Helper(parser.commands)
         # commands specific to executable
         self.commands = {EXIT : self._exit,
                          HELP : self.helper.help}
@@ -32,7 +33,6 @@ class Executable(router.Node):
         # create essential classes
         self.parser = parser.Parser(parser.commands, parser.rules)
         self.env = env.Environment()
-        self.helper = Helper(parser.commands)
         r = router.Router()
         devman = devicemanager.DeviceManager()
 
@@ -47,7 +47,7 @@ class Executable(router.Node):
         commandList = self.parser.parse(line)
         for command in commandList:
             if command.name in self.commands:
-                print self.commands[command](command)
+                self.commands[command.name](command)
         
         try:
             packet = self.parser.package(commandList)

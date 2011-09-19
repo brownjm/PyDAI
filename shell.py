@@ -146,16 +146,16 @@ class CursesPrompt(Executable):
             self.__update_screen()
 
     def _view(self, args):
-        if args[0].lower() in self.deviceWins:
-            if args[0] == self.currentWin:
-                self.addToOutput(self.currentWin, "Already viewing {0}".format(args[0].title()))
+        if args.args[0].lower() in self.deviceWins:
+            if args.args[0] == self.currentWin:
+                self.addToOutput(self.currentWin, "Already viewing {0}".format(args.args[0].title()))
             else:
-                self.addToOutput(self.currentWin, "Switching to {0}".format(args[0].title()))
-                self.deviceWins[args[0].lower()][0] = False
-                self.currentWin = args[0].lower()
+                self.addToOutput(self.currentWin, "Switching to {0}".format(args.args[0].title()))
+                self.deviceWins[args.args[0].lower()][0] = False
+                self.currentWin = args.args[0].lower()
             self.__update_screen()
         else:
-            self.addToOutput(self.currentWin, "Window {0} does not exist.".format(args[0]))
+            self.addToOutput(self.currentWin, "Window {0} does not exist.".format(args.args[0]))
             self.__update_display()
 
     def run(self):
@@ -172,9 +172,10 @@ class CursesPrompt(Executable):
                 self.addToOutput(self.currentWin, ''.join([">>> ", line]))
                 self.__update_display()
             except Exception as ex:
-                #self.addToOutput("main", "Error Occured:\n")
-                #self.addToOutput("main", traceback.format_exc())
-                raise ex
+                self.addToOutput("main", "Error Occured:\n")
+                self.addToOutput("main", traceback.format_exc())
+                self.__update_display()
+                #raise ex
                 line = ''
 
         curses.endwin()
