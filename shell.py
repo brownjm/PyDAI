@@ -37,13 +37,6 @@ class CursesPrompt(Executable):
         self.deviceWins = {"main": [False, array('c')]}
         self.currentWin = "main"
 
-    def __get_input(self, prompt_string):
-        self.inputwin.clear()
-        self.inputwin.addstr(0,0,prompt_string)
-        input = self.inputwin.getstr(0,len(prompt_string),60)
-        self.inputwin.refresh()
-        return input
-
     def __main_loop(self, prompt_string):
         input = array('c')
 
@@ -70,6 +63,7 @@ class CursesPrompt(Executable):
             elif i == curses.KEY_RESIZE:
                 self.yx = self.stdscr.getmaxyx()
                 self.screen.resize(self.yx[0],self.yx[1])
+                self.outputwin.resize(self.yx[0]-6, self.yx[1]-2)
             elif not i == -1:
                 try:
                     input.append(chr(i))
@@ -151,16 +145,23 @@ class CursesPrompt(Executable):
         line = ''
         while line != EXIT:
             try:
-                if len(line) > 0:
-                    self.execute(line)
-
                 line = self.__main_loop(">")
                 self.env.addToHistory(line)
-                self.addToOutput(self.currentWin, ''.join([">>> ", line]))
+                self.addToOutput(self.currentWin, ''.join(["\n>>> ", line]))
+
+                commandList = self.parser.parse(line)
+                handled = False
+                for command in commandList:
+                    if command.name in self.commands:
+                        self.addToOutput(self.currentWin, self.commands[command.name](command))
+                        handled = True
+                        
+                if not handled:
+                    packet = self.parser.package(commandList)
+                    self.router.send(packet)
             except Exception as ex:
                 self.addToOutput("main", "Error Occured:\n")
                 self.addToOutput("main", traceback.format_exc())
-                #raise ex
                 line = ''
 
         curses.endwin()
