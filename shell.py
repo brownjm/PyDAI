@@ -16,7 +16,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from executable import Executable
-from constants import EXIT, STATUS, NEW, DELETE, SOURCE, ERROR
+from constants import EXIT, STATUS, NEW, DELETE, SOURCE, ERROR, QUERY
 import curses
 import traceback
 from collections import deque
@@ -173,7 +173,8 @@ class CursesPrompt(Executable):
         if ERROR in packet.data:
             self.addToOutput(self.currentWin, packet[ERROR])
         else:
-            self.addToOutput("main", repr(packet[STATUS]))
+            if STATUS in packet.data:
+                self.addToOutput("main", repr(packet[STATUS]))
             if NEW in packet.data:
                 self.deviceWins[packet[SOURCE]] = [False, array('c')]
                 self.addToOutput(packet[SOURCE], repr(packet[STATUS]))
@@ -181,6 +182,8 @@ class CursesPrompt(Executable):
                 if self.currentWin == packet[SOURCE]:
                     self.currentWin = "main"
                 self.deviceWins.pop(packet[SOURCE])
+            if QUERY in packet.data:
+                self.addToOutput(self.currentWin, "You want to query yourself?\nWhat does that even mean?")
 
 if __name__ == '__main__':
     try:
