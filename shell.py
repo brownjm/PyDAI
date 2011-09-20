@@ -34,8 +34,9 @@ class CursesPrompt(Executable):
         self.screen.keypad(1)
         self.screen.nodelay(1)
         self.screen.timeout(50)
-        self.deviceWins = {"main": [False, array('c')]}
+        self.deviceWins = {"main": [False, []]}
         self.currentWin = "main"
+        self.topLine = 0
 
     def __main_loop(self, prompt_string):
         input = array('c')
@@ -57,6 +58,9 @@ class CursesPrompt(Executable):
             elif i == 554 or i == 539:
                 #Control-Right or Control-Left
                 self._movewin(i)
+            elif i == 519 or i == 560:
+                #Control-Down or Control-Up
+                self._scrollwin(i)
             elif i == curses.KEY_BACKSPACE:
                 if len(input) > 0:
                     input.pop()
@@ -64,6 +68,7 @@ class CursesPrompt(Executable):
                 self.yx = self.stdscr.getmaxyx()
                 self.screen.resize(self.yx[0],self.yx[1])
                 self.outputwin.resize(self.yx[0]-6, self.yx[1]-2)
+                self._resetScroll()
             elif not i == -1:
                 try:
                     input.append(chr(i))
@@ -93,8 +98,10 @@ class CursesPrompt(Executable):
             left = left + len(win) + 3
 
         self.screen.addstr(self.yx[0]-2,1,">")
+
         self.__update_display()
         self.__update_input(inp)
+            
         self.screen.noutrefresh()
 
     def __update_input(self, dispStr):
@@ -103,16 +110,51 @@ class CursesPrompt(Executable):
 
     def __update_display(self):
         self.outputwin.clear()
-        self.outputwin.addstr(0,0,self.deviceWins[self.currentWin][1].tostring())
+        dispyx = self.outputwin.getmaxyx()
+        top = self.topLine
+        bot = top + dispyx[0]
+        for index, line in enumerate(self.deviceWins[self.currentWin][1][top:bot]):
+            if len(line) > dispyx[1]:
+                self.outputwin.addstr(index,0,line[0:dispyx[1]-3])
+            else:
+                self.outputwin.addstr(index,0,line)
+
+
+        winLen = len(self.deviceWins[self.currentWin][1])
+        if winLen > dispyx[0]:
+            currScrollLine = float(0)
+            linesPerSect = 0
+            totScroll = float(dispyx[0]) #Scroll from 0 to totScroll - 1
+            xtraLines = float(winLen - totScroll)
+            if self.topLine == int(xtraLines):
+                currScrollLine = totScroll - 1
+            else:
+                linesPerSect = totScroll / xtraLines
+                currScrollLine = float(self.topLine) * linesPerSect
+            
+            for y in range(0,int(totScroll)):
+                if y == int(currScrollLine):
+                    self.outputwin.addch(y, dispyx[1]-2, curses.ACS_DIAMOND)
+                else:
+                    self.outputwin.addch(y, dispyx[1]-2, curses.ACS_CKBOARD)
+
         self.outputwin.noutrefresh()
 
     def addToOutput(self, win, outstr):
-        self.deviceWins[win][1].fromstring(outstr)
-        self.deviceWins[win][1].fromstring("\n")
-        while self.deviceWins[win][1].count("\n") >= self.yx[0]-6:
-            self.deviceWins[win][1].pop(0)
+        if outstr == None or outstr == '':
+            return
+
+        winLen = len(self.deviceWins[win][1])
+        listToAdd = outstr.split('\n')
+        newLen = len(listToAdd)
+        self.deviceWins[win][1].extend(listToAdd)
+
         if not win == self.currentWin:
             self.deviceWins[win][0] = True
+        else:
+            if (winLen - (self.yx[0] - 6)) - self.topLine == 0 or \
+            (winLen < self.yx[0]-6 and winLen + newLen > self.yx[0] - 6):
+                self.topLine = (winLen - (self.yx[0] - 6)) + newLen
 
     def _movewin(self, direction):
         wins = self.deviceWins.keys()
@@ -128,17 +170,35 @@ class CursesPrompt(Executable):
         if cw >= 0 and cw < len(wins):
             self.currentWin = wins[cw]
             self.deviceWins[self.currentWin][0] = False
+            self._resetScroll()
+
+    def _resetScroll(self):
+        winLen = len(self.deviceWins[self.currentWin][1])
+        dispLen = self.outputwin.getmaxyx()[0]
+        if winLen > dispLen:
+            self.topLine = winLen - dispLen
+        else:
+            self.topLine = 0
+
+    def _scrollwin(self, direction):
+        winLen = len(self.deviceWins[self.currentWin][1])
+        if winLen > self.yx[0] - 6:
+            if direction == 519 and self.topLine < (winLen - (self.yx[0] - 6)):
+                self.topLine = self.topLine + 1
+            elif direction == 560 and self.topLine > 0:
+                self.topLine = self.topLine - 1
 
     def _view(self, args):
         if args.args[0].lower() in self.deviceWins:
             if args.args[0] == self.currentWin:
                 self.addToOutput(self.currentWin, "Already viewing {0}".format(args.args[0].title()))
             else:
-                self.addToOutput(self.currentWin, "Switching to {0}".format(args.args[0].title()))
                 self.deviceWins[args.args[0].lower()][0] = False
                 self.currentWin = args.args[0].lower()
+                self._resetScroll()
         else:
             self.addToOutput(self.currentWin, "Window {0} does not exist.".format(args.args[0]))
+        return ''
 
     def run(self):
         self.addToOutput("main", self.getWelcome())
@@ -160,8 +220,8 @@ class CursesPrompt(Executable):
                     packet = self.parser.package(commandList)
                     self.router.send(packet)
             except Exception as ex:
-                self.addToOutput("main", "Error Occured:\n")
-                self.addToOutput("main", traceback.format_exc())
+                self.addToOutput(self.currentWin, "Error Occured:\n")
+                self.addToOutput(self.currentWin, traceback.format_exc())
                 line = ''
 
         curses.endwin()
@@ -176,7 +236,7 @@ class CursesPrompt(Executable):
             if STATUS in packet.data:
                 self.addToOutput("main", repr(packet[STATUS]))
             if NEW in packet.data:
-                self.deviceWins[packet[SOURCE]] = [False, array('c')]
+                self.deviceWins[packet[SOURCE]] = [False, []]
                 self.addToOutput(packet[SOURCE], repr(packet[STATUS]))
             if DELETE in packet.data:
                 if self.currentWin == packet[SOURCE]:
