@@ -43,21 +43,6 @@ class Executable(router.Node):
     def run(self):
         raise Exception("Required to override")
 
-    def execute(self, line):
-        try:
-            commandList = self.parser.parse(line)
-            handled = False
-            for command in commandList:
-                if command.name in self.commands:
-                    self.commands[command.name](command)
-                    handled = True
-
-            if not handled:
-                packet = self.parser.package(commandList)
-                self.router.send(packet)
-        except parser.ParseError as pe:
-            raise pe
-
     def send(self, packet):
         raise Exception("Required to override")
 
