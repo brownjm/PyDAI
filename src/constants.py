@@ -18,7 +18,7 @@
 """Module holds program-wide constants"""
 
 # Names of files and directories
-DEVFOLDER = "devices"
+DEVFOLDER = "../devices"
 DEVTEMPLATE = "devicetemplate"
 
 # Names of devices
