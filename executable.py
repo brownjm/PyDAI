@@ -15,6 +15,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import inspect
 import sys
 from collections import deque
 import router
@@ -69,53 +70,25 @@ class Helper(object):
 classes."""
         self.commandDict = {}
         for name, commandClass in commandDict.iteritems():
-            self.commandDict[name] = self._trim(commandClass.__doc__)
+            self.commandDict[name] = inspect.getdoc(commandClass)
 
     def help(self, helpCommand):
         """Get help on the line"""
         if len(helpCommand.args) == 0:
-            return self._helpmessage()
+            return self.helpmessage()
         else:
-            return self._getDocstring(helpCommand.args[0])
+            return self.getDocstring(helpCommand.args[0])
 
-    def _getDocstring(self, name):
+    def getDocstring(self, name):
         """Return information specific to an object"""
         if name in self.commandDict:
             return self.commandDict[name]
         else:
             return "No help for this command is available: {}".format(name)
 
-    def _helpmessage(self):
+    def helpmessage(self):
         return "Here are the available commands:\n{}\nTo receive more info on a command: help [command]".format(self.commandDict.keys())
-
-    def _trim(self, docstring):
-        """Removes newlines, aligns indentations, removes whitespace. 
-Code example from PEP257"""
-        if not docstring:
-            return ''
-        # Convert tabs to spaces (following the normal Python rules)
-        # and split into a list of lines:
-        lines = docstring.expandtabs().splitlines()
-        # Determine minimum indentation (first line doesn't count):
-        indent = sys.maxint
-        for line in lines[1:]:
-            stripped = line.lstrip()
-            if stripped:
-                indent = min(indent, len(line) - len(stripped))
-        # Remove indentation (first line is special):
-        trimmed = [lines[0].strip()]
-        if indent < sys.maxint:
-            for line in lines[1:]:
-                trimmed.append(line[indent:].rstrip())
-        # Strip off trailing and leading blank lines:
-        while trimmed and not trimmed[-1]:
-            trimmed.pop()
-        while trimmed and not trimmed[0]:
-            trimmed.pop(0)
-        # Return a single string:
-        return '\n'.join(trimmed)
 
 
 if __name__ == "__main__":
     h = Helper(parser.commands)
-    
