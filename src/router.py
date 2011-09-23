@@ -53,11 +53,24 @@ class Packet(object):
         return self.dest.popleft()
 
 
-class Node(object):
+class Node(multiprocessing.Process):
     """Inherit from this class and overload send method to be connected to 
 Router"""
     def __init__(self):
+        multiprocessing.Process.__init__(self)
+        self.packetQueue = Queue.Queue()
         self.router = None
+
+    def setup(self, address, key):
+        self.router = Client(address, authkey=key)
+        self.rt = threading.Thread(target=self.__routerThread, args=())
+        self.rt.daemon = True
+        self.rt.start()
+
+    def __routerThread(self):
+        while 1:
+            p = self.router.recv()
+            self.packetQueue.put(p)
 
     def send(self, packet):
         raise AttributeError("Must overload send method")
