@@ -19,7 +19,7 @@
 
 import unittest
 from collections import deque
-from pydai.src.parse import *
+from src.parse import *
 p = Parser(commands, rules)
 
 class ValidInput(unittest.TestCase):
