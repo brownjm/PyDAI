@@ -20,19 +20,19 @@ import sys
 from collections import deque
 import router
 import devicemanager
-import parser
+import parse
 import env
 from constants import EXIT, EXEC, DEVMAN, ENV, HELP
 
 class Executable(router.Node):
     def __init__(self):
-        self.helper = Helper(parser.commands)
+        self.helper = Helper(parse.commands)
         # commands specific to executable
         self.commands = {EXIT : self._exit,
                          HELP : self.helper.help}
 
         # create essential classes
-        self.parser = parser.Parser(parser.commands, parser.rules)
+        self.parser = parse.Parser(parse.commands, parse.rules)
         self.env = env.Environment()
         r = router.Router()
         devman = devicemanager.DeviceManager()
@@ -91,4 +91,4 @@ classes."""
 
 
 if __name__ == "__main__":
-    h = Helper(parser.commands)
+    h = Helper(parse.commands)
