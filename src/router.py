@@ -58,6 +58,7 @@ class Node(multiprocessing.Process):
 Router"""
     def __init__(self):
         multiprocessing.Process.__init__(self)
+        self.name = ""
         self.packetQueue = Queue.Queue()
         self.router = None
 

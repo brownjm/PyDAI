@@ -24,7 +24,6 @@ from constants import QUERY, NAME, MODEL, SN, RETURN, TYPE
 
 class Device(router.Node):
     def __init__(self, attributeDict, commandDict={}):
-        self.name = ""
         self.attribute = attributeDict
         self.command = commandDict
         self.packetPool = Queue.Queue()
