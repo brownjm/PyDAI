@@ -22,6 +22,9 @@ from collections import deque
 import threading
 import Queue
 from constants import QUERY, ROUTER, EXEC, STATUS, TARGET, SOURCE, ERROR
+from multiprocessing.connection import Listener, Client
+import multiprocessing
+import select
 
 class Packet(object):
     """Data bundle including destination information"""
@@ -64,10 +67,42 @@ Router"""
         pass
 
 
-class Router(object):
+class Router(multiprocessing.Process):
     """Routes Packets to appropriate Device"""
     def __init__(self):
-        self.devTable = {}
+        multiprocessing.Process.__init__(self)
+        self.devTable = {} #Contains dict of connections to device processes
+        self.server = Listener(('', 15000), authkey='12345')
+
+    def run(self):
+        running = 1
+        while running:
+            inputs = [self.server._listener._socket]
+            inputs.extend(self.devTable.values())
+            inr, outr, excr = select.select(inputs, [], [])
+            for s in inr:
+                if s == self.server._listener._socket:
+                    #Connecting a client
+                    conn = self.serv.accept()
+                    #add to device connection
+                else:
+                    try:
+                        packet = s.recv()
+                        #Check for kill command
+                        #if KILL in packet.data
+                        #kill everything
+                        #elif QUERY in packet.data and packet.data[QUERY] == ROUTER:
+                        #packet.next()
+                        #packet.addDest(ROUTER, EXEC)
+                        #packet[STATUS] = str(self.devTable.keys())
+                        
+                        #Route to next
+                        if packet.data[TARGET] not in self.devTable:
+                            unknown = packet.next() #pop off unknonw target
+                            packet.addDest(ROUTER, EXEC)
+                            packet[ERROR] = "Target device not found: {}".format(unknown)
+                            
+                        self.devTable[packet.next()].send(packet)
 
     def send(self, packet):
         """Send packet to next destination"""
