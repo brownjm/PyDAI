@@ -30,46 +30,51 @@ class Device(router.Node):
         self.packetPool = Queue.Queue()
         self.protocol = protocol.Protocol(attributeDict)
         self.protocol.open()
+    
+    def run(self):
+        self.setup(('localhost', 15000), '12345')
+        while 1:
+            if not self.packetQueue.empty():
+                packet = self.packetQueue.get()
+                if SEND in packet.data:
+                    request = packet.data[SEND]
+                    if request in self.attribute:
+                        data = self.attribute[request]
+                        packet.addDest(self.name, EXEC)
+                        packet[RETURN] = data
+                        packet[TYPE] = "string"
 
-    def send(self, packet):
-        if SEND in packet.data:
-            request = packet.data[SEND]
-            if request in self.attribute:
-                data = self.attribute[request]
-                packet.addDest(self.name, EXEC)
-                packet[RETURN] = data
-                packet[TYPE] = "string"
+                    elif request in self.command:
+                        com, returnType = self.command[packet.data[SEND]]
+                        self.write(com)
+                        time.sleep(float(self.attribute[TIMEOUT]))
+                        response = self.read()
+                        packet.addDest(self.name, EXEC)
+                        packet[RETURN] = response
+                        packet[TYPE] = returnType
 
-            elif request in self.command:
-                com, returnType = self.command[packet.data[SEND]]
-                self.write(com)
-                time.sleep(float(self.attribute[TIMEOUT]))
-                response = self.read()
-                packet.addDest(self.name, EXEC)
-                packet[RETURN] = response
-                packet[TYPE] = returnType
-
-            else:
-                packet.addDest(self.name, EXEC)
-                packet[ERROR] = "Not a valid command for {}: {}".format(self.name, request)
+                    else:
+                        packet.addDest(self.name, EXEC)
+                        packet[ERROR] = "Not a valid command for {}: {}".format(self.name, request)
             
-        elif DELETE in packet.data:
-            name = packet.data[DELETE]
-            self.router.disconnect(name)
-            packet.addDest(self.name, EXEC)
-            packet[STATUS] = "Device deleted: {}".format(name)
+                elif DELETE in packet.data:
+                    name = packet.data[DELETE]
+                    self.router.disconnect(name)
+                    packet.addDest(self.name, EXEC)
+                    packet[STATUS] = "Device deleted: {}".format(name)
 
-        elif QUERY in packet.data:
-            packet.addDest(self.name, EXEC)
-            att = self.attribute
-            packet[STATUS] = "\n".join([att[NAME], att[MODEL], att[SN]])
+                elif QUERY in packet.data:
+                    packet.addDest(self.name, EXEC)
+                    att = self.attribute
+                    packet[STATUS] = "\n".join([att[NAME], att[MODEL], att[SN]])
 
-        else:
-            packet.addDest(self.name, EXEC)
-            packet[ERROR] = "Not a valid command for {}: {}".format(self.name, request)
+                else:
+                    packet.addDest(self.name, EXEC)
+                    packet[ERROR] = "Not a valid command for {}: {}".format(self.name, request)
+                
 
-        self.router.send(packet)
-            
+    #def send(self, packet):
+    #    self.router.send(packet) 
 
     def read(self):
         """Read data from the physical device via Protocol class."""
