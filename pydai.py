@@ -2,14 +2,14 @@ import unittest
 import argparse
 import sys
 import os
-from test import parserTest
+from test import parseTest
 from src.shell import CursesPrompt
 
 
 def createSuite():
     loader = unittest.TestLoader()
     suite = unittest.TestSuite()
-    suite.addTests(loader.loadTestsFromModule(parserTest))
+    suite.addTests(loader.loadTestsFromModule(parseTest))
     return suite
 
 def runTests():
