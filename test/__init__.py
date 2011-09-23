@@ -1,1 +1,3 @@
-from src import *
+import parseTest
+
+__all__ = ["parseTest"]
