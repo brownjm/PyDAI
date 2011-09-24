@@ -27,24 +27,24 @@ class DeviceManager(router.Node):
         self.outbox = Queue.Queue()
         self.devFac = DeviceFactory()
 
-    def send(self, packet):
+    def process(self, packet):
         if NEW in packet.data:
             name = packet.data[NEW]
             if name in self.deviceList:
                 packet.addDest(DEVMAN, EXEC)
                 msg = "Device already created with the name: {0}".format(name)
                 packet[ERROR] = msg
-
+                
             else:
                 try:
                     self.addDevice(name, name)
                     packet.addDest(name, EXEC)
                     packet[STATUS] = "Device created: {0}".format(name)
-
+                    
                 except FileNotFoundError as ex:
                     packet.addDest(DEVMAN, EXEC)
                     packet[ERROR] = ex.msg
-
+                    
         elif DELETE in packet.data:
             name = packet.data[DELETE]
             if not name in self.deviceList:
@@ -61,13 +61,14 @@ class DeviceManager(router.Node):
         else:
             packet.addDest(DEVMAN, EXEC)
             packet[ERROR] = "{} cannot do anything with packet:\n{}".format(DEVMAN, packet)
-
+            
         self.router.send(packet)
 
     def addDevice(self, filename, username):
         d = self.devFac.constructDevice(filename)
         d.name = username
-        self.router.connect(username, d)
+        d.daemon = True
+        d.start()
         self.deviceList.append(username)
     
     def removeDevice(self, username, packet):
