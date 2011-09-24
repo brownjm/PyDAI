@@ -75,6 +75,7 @@ class CursesPrompt(Executable):
                 except ValueError as ex:
                     self.addToOutput(self.currentWin, "Key entry error.")
             self.__update_screen(input.tostring())
+            self.__handle_packets()
             curses.doupdate()
 
         return input.tostring()
@@ -229,28 +230,33 @@ class CursesPrompt(Executable):
     def _callback(self):
         pass
 
-    def send(self, packet):
-        if ERROR in packet.data:
-            self.addToOutput(self.currentWin, packet[ERROR])
-        else:
-            if STATUS in packet.data:
-                self.addToOutput("main", repr(packet[STATUS]))
-            if NEW in packet.data:
-                self.deviceWins[packet[SOURCE]] = [False, []]
-                self.addToOutput(packet[SOURCE], repr(packet[STATUS]))
-            if DELETE in packet.data:
-                if self.currentWin == packet[SOURCE]:
-                    self.currentWin = "main"
-                self.deviceWins.pop(packet[SOURCE])
-            if QUERY in packet.data:
-                self.addToOutput(self.currentWin, "You want to query yourself?\nWhat does that even mean?")
+    def __handle_packets(self):
+        if not self.packetQueue.empty():
+            packet = self.packetQueue.get()
+            if ERROR in packet.data:
+                self.addToOutput(self.currentWin, packet[ERROR])
+            else:
+                if STATUS in packet.data:
+                    self.addToOutput("main", repr(packet[STATUS]))
+
+                if NEW in packet.data:
+                    self.deviceWins[packet[SOURCE]] = [False, []]
+                    self.addToOutput(packet[SOURCE], repr(packet[STATUS]))
+
+                if DELETE in packet.data:
+                    if self.currentWin == packet[SOURCE]:
+                        self.currentWin = "main"
+                        self.deviceWins.pop(packet[SOURCE])
+
+                if QUERY in packet.data:
+                    self.addToOutput(self.currentWin, "You want to query yourself?\nWhat does that even mean?")
 
 if __name__ == '__main__':
     try:
         CP = CursesPrompt()
         CP.run()
     except Exception as ex:
-        curses.endwin()
+        #curses.endwin()
         tb = traceback.format_exc()
         print "Catastrophic Error:\n"
         print tb

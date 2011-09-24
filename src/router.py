@@ -25,6 +25,7 @@ from constants import QUERY, ROUTER, EXEC, STATUS, TARGET, SOURCE, ERROR
 from multiprocessing.connection import Listener, Client
 import multiprocessing
 import select
+import time
 
 class Packet(object):
     """Data bundle including destination information"""
@@ -81,6 +82,8 @@ Router"""
             if not self.packetQueue.empty():
                 packet = self.packetQueue.get()
                 self.process(packet)
+            else:
+                time.sleep(.01)
 
     def __routerThread(self):
         while 1:
@@ -113,7 +116,7 @@ class Router(multiprocessing.Process):
             for s in inr:
                 if s == self.server._listener._socket:
                     #Connecting a client
-                    conn = self.serv.accept()
+                    conn = self.server.accept()
                     tmpConnections.append(conn)
                     #add to device connection
                 else:
@@ -128,9 +131,10 @@ class Router(multiprocessing.Process):
                             packet[STATUS] = str(self.devTable.keys())
                         elif STATUS in packet.data and packet[STATUS] == "register":
                             #Registering a device
-                            self.devTable[packet[RETURN]] = s
+                            self.devTable[packet[SOURCE]] = s
                             tmpConnections.remove(s)
-                            
+                            print "Device " + packet[SOURCE] + " registered"
+                        
                         if packet.data[TARGET] == ROUTER:
                             continue
 
@@ -141,9 +145,20 @@ class Router(multiprocessing.Process):
                             packet[ERROR] = "Target device not found: {}".format(unknown)
                             
                         self.devTable[packet.next()].send(packet)
-
+                    except EOFError:
+                        #Close connection
+                        s.close()
+                        if s in tmpConnections:
+                            tmpConnections.remove()
+                        
+                        for dev in self.devTable.keys():
+                            if self.devTable[dev] == s:
+                                self.devTable.pop(dev)
+                                print "Device " + dev + " removed."
+                                break
+                    """
     def send(self, packet):
-        """Send packet to next destination"""
+        Send packet to next destination
         if len(packet.dest) == 0:
             return
 
@@ -161,7 +176,7 @@ class Router(multiprocessing.Process):
             packet[ERROR] = "Target device not found: {}".format(unknown)
 
         self.devTable[packet.next()].send(packet)
-
+        """
     def connect(self, device_name, device):
         device.router = self
         self.devTable[device_name] = WorkerThread(device)
@@ -198,4 +213,5 @@ class WorkerThread(threading.Thread):
             self.device._callback()
 
 if __name__ == "__main__":
-    pass
+    r = Router()
+    r.start()

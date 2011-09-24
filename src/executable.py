@@ -26,6 +26,7 @@ from constants import EXIT, EXEC, DEVMAN, ENV, HELP
 
 class Executable(router.Node):
     def __init__(self):
+        router.Node.__init__(self)
         self.helper = Helper(parse.commands)
         # commands specific to executable
         self.commands = {EXIT : self._exit,
@@ -37,12 +38,19 @@ class Executable(router.Node):
         r = router.Router()
         devman = devicemanager.DeviceManager()
 
-        # make connections to router
-        r.connect(EXEC, self)
-        r.connect(DEVMAN, devman)
+        r.daemon = True
+        r.start()
+        devman.daemon = True
+        devman.start()
 
-    def run(self):
-        raise Exception("Required to override")
+        self.name = EXEC
+        self.connect(('localhost', 15000), '12345')
+        # make connections to router
+        #r.connect(EXEC, self)
+        #r.connect(DEVMAN, devman)
+
+    #def run(self):
+    #    raise Exception("Required to override")
 
     def send(self, packet):
         raise Exception("Required to override")

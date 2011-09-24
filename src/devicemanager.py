@@ -23,6 +23,8 @@ from constants import NEW, DEVMAN, EXEC, STATUS, DELETE, QUERY, ERROR
 class DeviceManager(router.Node):
     """Provides methods to handle installed devices."""
     def __init__(self):
+        router.Node.__init__(self)
+        self.name = DEVMAN
         self.deviceList = []
         self.outbox = Queue.Queue()
         self.devFac = DeviceFactory()
