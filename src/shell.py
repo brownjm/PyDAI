@@ -227,9 +227,6 @@ class CursesPrompt(Executable):
 
         curses.endwin()
 
-    def _callback(self):
-        pass
-
     def __handle_packets(self):
         if not self.in_packetQueue.empty():
             packet = self.in_packetQueue.get()

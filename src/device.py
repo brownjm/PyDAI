@@ -55,23 +55,12 @@ class Device(router.Node):
                 
         elif DELETE in packet.data:
             pass
-            #name = packet.data[DELETE]
-            #packet.addDest(self.name, EXEC)
-            #packet[STATUS] = "Device deleted: {}".format(name)
-            #self.router.send(packet)
-            #self.disconnect()
             
         elif QUERY in packet.data:
             packet.addDest(self.name, EXEC)
             att = self.attribute
             packet[STATUS] = "\n".join([att[NAME], att[MODEL], att[SN]])
             
-        elif STATUS in packet.data:
-            if packet[STATUS] == "register":
-                #Register device with router
-                packet.addDest(self.name, ROUTER)
-                packet[RETURN] = self.name
-
         else:
             packet.addDest(self.name, EXEC)
             packet[ERROR] = "Not a valid command for {}: {}".format(self.name, request)

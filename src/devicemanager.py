@@ -56,8 +56,6 @@ class DeviceManager(router.Node):
                 packet[ERROR] = msg
             else:
                 self.removeDevice(name, packet)
-                #packet.addDest(DEVMAN, name)
-                #return
                 
         elif QUERY in packet.data:
             packet.addDest(DEVMAN, EXEC)

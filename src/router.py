@@ -115,11 +115,9 @@ Router"""
                     router_out.send(packet)
 
             time.sleep(.01)
+
     def sendToRouter(self, packet):
         self.out_packetQueue.put(packet)
-
-    def send(self, packet):
-        raise AttributeError("Must overload send method")
 
 class Router(multiprocessing.Process):
     """Routes Packets to appropriate Device"""
@@ -141,13 +139,12 @@ class Router(multiprocessing.Process):
                     #Connecting a client
                     conn = self.server.accept()
                     tmpConnections.append(conn)
-                    #add to device connection
                 else:
                     try:
                         packet = s.recv()
-                        #Check for kill command
-                        #if KILL in packet.data
-                        #kill everything
+
+                        #TODO: Add ability to gracefully KILL everything connected
+
                         if QUERY in packet.data and packet.data[QUERY] == ROUTER:
                             packet.next()
                             packet.addDest(ROUTER, EXEC)

@@ -35,22 +35,9 @@ class Executable(router.Node):
         # create essential classes
         self.parser = parse.Parser(parse.commands, parse.rules)
         self.env = env.Environment()
-        #r = router.Router()
-        #devman = devicemanager.DeviceManager()
-
-        #r.daemon = True
-        #r.start()
-        #devman.daemon = True
-        #devman.start()
 
         self.name = EXEC
         self.connect(('localhost', 15000), '12345')
-        # make connections to router
-        #r.connect(EXEC, self)
-        #r.connect(DEVMAN, devman)
-
-    #def run(self):
-    #    raise Exception("Required to override")
 
     def send(self, packet):
         raise Exception("Required to override")
@@ -68,6 +55,7 @@ class Executable(router.Node):
 """
 
     def _exit(self, *args):
+        self.disconnect()
         return "Goodbye!!"
 
 
