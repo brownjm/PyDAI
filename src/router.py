@@ -129,15 +129,15 @@ class Router(multiprocessing.Process):
         multiprocessing.Process.__init__(self)
         self.devTable = {} #Contains dict of connections to device processes
         self.server = Listener(('', 15000), authkey='12345')
+        self.procStop = multiprocessing.Event()
 
     def run(self):
-        running = 1
         tmpConnections = []
-        while running:
+        while not self.procStop.is_set():
             inputs = [self.server._listener._socket]
             inputs.extend(tmpConnections)
             inputs.extend(self.devTable.values())
-            inr, outr, excr = select.select(inputs, [], [])
+            inr, outr, excr = select.select(inputs, [], [], .01)
             for s in inr:
                 if s == self.server._listener._socket:
                     #Connecting a client
@@ -157,7 +157,7 @@ class Router(multiprocessing.Process):
                             #Registering a device
                             self.devTable[packet[SOURCE]] = s
                             tmpConnections.remove(s)
-                            print "Device " + packet[SOURCE] + " registered"
+                            #print "Device " + packet[SOURCE] + " registered"
                         
                         if packet.data[TARGET] == ROUTER:
                             continue
@@ -178,7 +178,7 @@ class Router(multiprocessing.Process):
                         for dev in self.devTable.keys():
                             if self.devTable[dev] == s:
                                 self.devTable.pop(dev)
-                                print "Device " + dev + " removed."
+                                #print "Device " + dev + " removed."
                                 break
 
     def connect(self, device_name, device):
