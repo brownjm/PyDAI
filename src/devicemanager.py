@@ -19,32 +19,35 @@ import Queue
 import router
 from devicefactory import DeviceFactory, FileNotFoundError
 from constants import NEW, DEVMAN, EXEC, STATUS, DELETE, QUERY, ERROR
+import multiprocessing
 
 class DeviceManager(router.Node):
     """Provides methods to handle installed devices."""
     def __init__(self):
-        self.deviceList = []
+        router.Node.__init__(self)
+        self.name = DEVMAN
+        self.deviceList = dict()
         self.outbox = Queue.Queue()
         self.devFac = DeviceFactory()
 
-    def send(self, packet):
+    def process(self, packet):
         if NEW in packet.data:
             name = packet.data[NEW]
             if name in self.deviceList:
                 packet.addDest(DEVMAN, EXEC)
                 msg = "Device already created with the name: {0}".format(name)
                 packet[ERROR] = msg
-
+                
             else:
                 try:
                     self.addDevice(name, name)
                     packet.addDest(name, EXEC)
                     packet[STATUS] = "Device created: {0}".format(name)
-
+                    
                 except FileNotFoundError as ex:
                     packet.addDest(DEVMAN, EXEC)
                     packet[ERROR] = ex.msg
-
+                    
         elif DELETE in packet.data:
             name = packet.data[DELETE]
             if not name in self.deviceList:
@@ -61,19 +64,25 @@ class DeviceManager(router.Node):
         else:
             packet.addDest(DEVMAN, EXEC)
             packet[ERROR] = "{} cannot do anything with packet:\n{}".format(DEVMAN, packet)
-
-        self.router.send(packet)
+            
+        self.sendToRouter(packet)
 
     def addDevice(self, filename, username):
         d = self.devFac.constructDevice(filename)
+        self.deviceList[username] = (d, multiprocessing.Event())
         d.name = username
-        self.router.connect(username, d)
-        self.deviceList.append(username)
+        d.daemon = True
+        d.procStop = self.deviceList[username][1]
+        d.start()
     
     def removeDevice(self, username, packet):
-        packet.addDest(DEVMAN, username)
-        self.deviceList.remove(username)
-        self.router.send(packet)
+        d = self.deviceList[username][0]
+        d.procStop.set()
+        d.join()
+        packet.addDest(username, EXEC)
+        packet[STATUS] = "Device deleted: {}".format(username)
+        self.deviceList.pop(username)
 
 if __name__ == '__main__':
     dm = DeviceManager()
+    dm.start()

@@ -2,7 +2,9 @@ import unittest
 import argparse
 from test import parseTest
 from src.shell import CursesPrompt
-
+from src.router import Router
+from src.devicemanager import DeviceManager
+from multiprocessing import Event
 
 def createSuite():
     loader = unittest.TestLoader()
@@ -15,8 +17,24 @@ def runTests():
     runner.run(createSuite())
 
 def commandLine():
+    devStop = Event()
+    routeStop = Event()
+    r = Router()
+    r.procStop = routeStop
+    r.start()
+    d = DeviceManager()
+    d.procStop = devStop
+    d.start()
     cp = CursesPrompt()
     cp.run()
+    print "Shutting Down Device Manager..."
+    devStop.set()
+    d.join()
+    print "Done"
+    print "Shutting Down Router..."
+    routeStop.set()
+    r.join()
+    print "Done"
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
