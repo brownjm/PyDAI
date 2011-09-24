@@ -62,6 +62,7 @@ Router"""
         self.name = ""
         self.packetQueue = Queue.Queue()
         self.router = None
+        self.running = 1
 
     def connect(self, address, key):
         self.router = Client(address, authkey=key)
@@ -73,12 +74,17 @@ Router"""
         self.rt.start()
         self.router.send(p)
 
+    def disconnect(self):
+        self.router.close()
+        self.router = None
+        self.running = 0
+
     def process(self, packet):
         raise AttributeError("Must overload process method")
 
     def run(self):
         self.connect(('localhost', 15000), '12345')
-        while 1:
+        while self.running:
             if not self.packetQueue.empty():
                 packet = self.packetQueue.get()
                 self.process(packet)
@@ -156,27 +162,7 @@ class Router(multiprocessing.Process):
                                 self.devTable.pop(dev)
                                 print "Device " + dev + " removed."
                                 break
-                    """
-    def send(self, packet):
-        Send packet to next destination
-        if len(packet.dest) == 0:
-            return
 
-        # check whether user is requesting info from Router itself
-        if QUERY in packet.data:
-            device = packet.data[QUERY]
-            if device == ROUTER:
-                packet.next() # pop off ROUTER
-                packet.addDest(ROUTER, EXEC)
-                packet[STATUS] = str(self.devTable.keys())
-
-        if packet.data[TARGET] not in self.devTable:
-            unknown = packet.next() # pop off unknown target
-            packet.addDest(ROUTER, EXEC)
-            packet[ERROR] = "Target device not found: {}".format(unknown)
-
-        self.devTable[packet.next()].send(packet)
-        """
     def connect(self, device_name, device):
         device.router = self
         self.devTable[device_name] = WorkerThread(device)

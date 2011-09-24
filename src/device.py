@@ -24,6 +24,7 @@ from constants import QUERY, NAME, MODEL, SN, RETURN, TYPE
 
 class Device(router.Node):
     def __init__(self, attributeDict, commandDict={}):
+        router.Node.__init__(self)
         self.attribute = attributeDict
         self.command = commandDict
         self.packetPool = Queue.Queue()
@@ -54,9 +55,10 @@ class Device(router.Node):
                 
         elif DELETE in packet.data:
             name = packet.data[DELETE]
-            self.router.disconnect(name)
             packet.addDest(self.name, EXEC)
             packet[STATUS] = "Device deleted: {}".format(name)
+            self.router.send(packet)
+            self.disconnect()
             
         elif QUERY in packet.data:
             packet.addDest(self.name, EXEC)
@@ -73,7 +75,8 @@ class Device(router.Node):
             packet.addDest(self.name, EXEC)
             packet[ERROR] = "Not a valid command for {}: {}".format(self.name, request)
 
-        self.router.send(packet)
+        if not self.router == None:
+            self.router.send(packet)
                 
 
     #def send(self, packet):

@@ -246,7 +246,7 @@ class CursesPrompt(Executable):
                 if DELETE in packet.data:
                     if self.currentWin == packet[SOURCE]:
                         self.currentWin = "main"
-                        self.deviceWins.pop(packet[SOURCE])
+                    self.deviceWins.pop(packet[SOURCE])
 
                 if QUERY in packet.data:
                     self.addToOutput(self.currentWin, "You want to query yourself?\nWhat does that even mean?")

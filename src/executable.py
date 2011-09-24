@@ -35,13 +35,13 @@ class Executable(router.Node):
         # create essential classes
         self.parser = parse.Parser(parse.commands, parse.rules)
         self.env = env.Environment()
-        r = router.Router()
-        devman = devicemanager.DeviceManager()
+        #r = router.Router()
+        #devman = devicemanager.DeviceManager()
 
-        r.daemon = True
-        r.start()
-        devman.daemon = True
-        devman.start()
+        #r.daemon = True
+        #r.start()
+        #devman.daemon = True
+        #devman.start()
 
         self.name = EXEC
         self.connect(('localhost', 15000), '12345')

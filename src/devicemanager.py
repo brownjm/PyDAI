@@ -55,6 +55,7 @@ class DeviceManager(router.Node):
                 packet[ERROR] = msg
             else:
                 self.removeDevice(name, packet)
+                packet.addDest(DEVMAN, name)
                 
         elif QUERY in packet.data:
             packet.addDest(DEVMAN, EXEC)
@@ -74,9 +75,10 @@ class DeviceManager(router.Node):
         self.deviceList.append(username)
     
     def removeDevice(self, username, packet):
-        packet.addDest(DEVMAN, username)
+        #packet.addDest(DEVMAN, username)
         self.deviceList.remove(username)
-        self.router.send(packet)
+        #self.router.send(packet)
 
 if __name__ == '__main__':
     dm = DeviceManager()
+    dm.start()
