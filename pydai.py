@@ -1,7 +1,5 @@
 import unittest
 import argparse
-import sys
-import os
 from test import parseTest
 from src.shell import CursesPrompt
 
