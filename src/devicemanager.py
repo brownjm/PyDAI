@@ -25,7 +25,7 @@ class DeviceManager(router.Node):
     def __init__(self):
         router.Node.__init__(self)
         self.name = DEVMAN
-        self.deviceList = []
+        self.deviceList = {}
         self.outbox = Queue.Queue()
         self.devFac = DeviceFactory()
 
@@ -55,7 +55,8 @@ class DeviceManager(router.Node):
                 packet[ERROR] = msg
             else:
                 self.removeDevice(name, packet)
-                packet.addDest(DEVMAN, name)
+                #packet.addDest(DEVMAN, name)
+                return
                 
         elif QUERY in packet.data:
             packet.addDest(DEVMAN, EXEC)
@@ -72,12 +73,13 @@ class DeviceManager(router.Node):
         d.name = username
         d.daemon = True
         d.start()
-        self.deviceList.append(username)
+        self.deviceList[username] = d
     
     def removeDevice(self, username, packet):
-        #packet.addDest(DEVMAN, username)
-        self.deviceList.remove(username)
-        #self.router.send(packet)
+        packet.addDest(DEVMAN, username)
+        self.router.send(packet)
+        self.deviceList[username].join()
+        self.deviceList.pop(username)
 
 if __name__ == '__main__':
     dm = DeviceManager()

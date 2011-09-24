@@ -63,6 +63,7 @@ Router"""
         self.packetQueue = Queue.Queue()
         self.router = None
         self.running = 1
+        self._stop = threading.Event()
 
     def connect(self, address, key):
         self.router = Client(address, authkey=key)
@@ -78,6 +79,10 @@ Router"""
         self.router.close()
         self.router = None
         self.running = 0
+        self._stop.set()
+        print "SetStop"
+        self.rt.join()
+        print "Dead"
 
     def process(self, packet):
         raise AttributeError("Must overload process method")
@@ -92,9 +97,12 @@ Router"""
                 time.sleep(.01)
 
     def __routerThread(self):
-        while 1:
-            p = self.router.recv()
-            self.packetQueue.put(p)
+        r = self.router
+        while not self._stop.isSet():
+            inr, outr, excr = select.select([r], [], [], .01)
+            for router in inr:
+                p = router.recv()
+                self.packetQueue.put(p)
 
     def send(self, packet):
         raise AttributeError("Must overload send method")
