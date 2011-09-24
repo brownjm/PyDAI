@@ -23,8 +23,8 @@ from collections import deque
 from array import array
 
 class CursesPrompt(Executable):
-    def __init__(self):
-        Executable.__init__(self)
+    def __init__(self, address=('localhost', 15000), akey='12345'):
+        Executable.__init__(self, address, akey)
         self.commands["view"] = self._view
         self.stdscr = curses.initscr()
         curses.curs_set(0)
