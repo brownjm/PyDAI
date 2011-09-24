@@ -90,6 +90,10 @@ class Command(object):
     def __str__(self):
         return "{}({})".format(self.name, self.args)
 
+    def __eq__(self, other):
+        """Equivalence is same command class and arguments"""
+        return (type(self) == type(other)) and (self.args == other.args)
+
 
 class New(Command):
     """Creates a new device from specified configuration file.

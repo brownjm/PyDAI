@@ -17,8 +17,10 @@
 
 """Module holds program-wide constants"""
 
+import os.path as op
+
 # Names of files and directories
-DEVFOLDER = "../devices"
+DEVFOLDER = op.join(op.dirname(op.dirname(op.abspath(__file__))), "devices")
 DEVTEMPLATE = "devicetemplate"
 
 # Names of devices

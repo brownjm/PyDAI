@@ -37,6 +37,10 @@ class Packet(object):
         """Pretty print of Packet"""
         return "{0} | {1}".format(" -> ".join(self.dest), self.data)
 
+    def __eq__(self, other):
+        """Equivalence is same destinations and same data"""
+        return (self.dest == other.dest) and (self.data == other.data)
+
     def __getitem__(self, key):
         return self.data[key]
 

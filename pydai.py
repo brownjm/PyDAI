@@ -1,7 +1,5 @@
 import unittest
 import argparse
-import sys
-import os
 from test import parseTest
 from src.shell import CursesPrompt
 
@@ -21,7 +19,6 @@ def commandLine():
     cp.run()
 
 if __name__ == "__main__":
-    os.chdir("src")
     parser = argparse.ArgumentParser()
     parser.add_argument("--test", action="store_true", default=False,
                         help="Run the unit tests")
