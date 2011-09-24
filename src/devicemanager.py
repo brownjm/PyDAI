@@ -19,13 +19,14 @@ import Queue
 import router
 from devicefactory import DeviceFactory, FileNotFoundError
 from constants import NEW, DEVMAN, EXEC, STATUS, DELETE, QUERY, ERROR
+import multiprocessing
 
 class DeviceManager(router.Node):
     """Provides methods to handle installed devices."""
     def __init__(self):
         router.Node.__init__(self)
         self.name = DEVMAN
-        self.deviceList = {}
+        self.deviceList = dict()
         self.outbox = Queue.Queue()
         self.devFac = DeviceFactory()
 
@@ -70,15 +71,16 @@ class DeviceManager(router.Node):
 
     def addDevice(self, filename, username):
         d = self.devFac.constructDevice(filename)
+        self.deviceList[username] = (d, multiprocessing.Event())
         d.name = username
         d.daemon = True
+        d.procStop = self.deviceList[username][1]
         d.start()
-        self.deviceList[username] = d
     
     def removeDevice(self, username, packet):
-        packet.addDest(DEVMAN, username)
-        self.router.send(packet)
-        self.deviceList[username].join()
+        d = self.deviceList[username][0]
+        d.procStop.set()
+        d.join()
         self.deviceList.pop(username)
 
 if __name__ == '__main__':

@@ -54,11 +54,12 @@ class Device(router.Node):
                 packet[ERROR] = "Not a valid command for {}: {}".format(self.name, request)
                 
         elif DELETE in packet.data:
-            name = packet.data[DELETE]
-            packet.addDest(self.name, EXEC)
-            packet[STATUS] = "Device deleted: {}".format(name)
-            self.router.send(packet)
-            self.disconnect()
+            pass
+            #name = packet.data[DELETE]
+            #packet.addDest(self.name, EXEC)
+            #packet[STATUS] = "Device deleted: {}".format(name)
+            #self.router.send(packet)
+            #self.disconnect()
             
         elif QUERY in packet.data:
             packet.addDest(self.name, EXEC)

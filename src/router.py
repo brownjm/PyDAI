@@ -21,7 +21,7 @@ Nodes"""
 from collections import deque
 import threading
 import Queue
-from constants import QUERY, ROUTER, EXEC, STATUS, TARGET, SOURCE, ERROR
+from constants import QUERY, ROUTER, EXEC, STATUS, TARGET, SOURCE, ERROR, DELETE
 from multiprocessing.connection import Listener, Client
 import multiprocessing
 import select
@@ -62,7 +62,7 @@ Router"""
         self.name = ""
         self.packetQueue = Queue.Queue()
         self.router = None
-        self.running = 1
+        self.procStop = multiprocessing.Event()
         self._stop = threading.Event()
 
     def connect(self, address, key):
@@ -76,9 +76,14 @@ Router"""
         self.router.send(p)
 
     def disconnect(self):
+        name = self.name
+        packet = Packet()
+        packet.addDest(name, EXEC)
+        packet[DELETE] = name
+        packet[STATUS] = "Device deleted: {}".format(name)
+        self.router.send(packet)
         self.router.close()
         self.router = None
-        self.running = 0
         self._stop.set()
         print "SetStop"
         self.rt.join()
@@ -89,12 +94,14 @@ Router"""
 
     def run(self):
         self.connect(('localhost', 15000), '12345')
-        while self.running:
+        while not self.procStop.is_set():
             if not self.packetQueue.empty():
                 packet = self.packetQueue.get()
                 self.process(packet)
             else:
                 time.sleep(.01)
+                
+        self.disconnect()
 
     def __routerThread(self):
         r = self.router
