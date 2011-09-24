@@ -72,6 +72,16 @@ Router"""
         self.rt.start()
         self.router.send(p)
 
+    def process(self, packet):
+        raise AttributeError("Must overload process method")
+
+    def run(self):
+        self.connect(('localhost', 15000), '12345')
+        while 1:
+            if not self.packetQueue.empty():
+                packet = self.packetQueue.get()
+                self.process(packet)
+
     def __routerThread(self):
         while 1:
             p = self.router.recv()
