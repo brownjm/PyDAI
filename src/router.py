@@ -62,11 +62,15 @@ Router"""
         self.packetQueue = Queue.Queue()
         self.router = None
 
-    def setup(self, address, key):
+    def connect(self, address, key):
         self.router = Client(address, authkey=key)
+        p = Packet()
+        p.addDest(self.name, ROUTER)
+        p[STATUS] = "register"
         self.rt = threading.Thread(target=self.__routerThread, args=())
         self.rt.daemon = True
         self.rt.start()
+        self.router.send(p)
 
     def __routerThread(self):
         while 1:
@@ -90,14 +94,17 @@ class Router(multiprocessing.Process):
 
     def run(self):
         running = 1
+        tmpConnections = []
         while running:
             inputs = [self.server._listener._socket]
+            inputs.extend(tmpConnections)
             inputs.extend(self.devTable.values())
             inr, outr, excr = select.select(inputs, [], [])
             for s in inr:
                 if s == self.server._listener._socket:
                     #Connecting a client
                     conn = self.serv.accept()
+                    tmpConnections.append(conn)
                     #add to device connection
                 else:
                     try:
@@ -105,11 +112,18 @@ class Router(multiprocessing.Process):
                         #Check for kill command
                         #if KILL in packet.data
                         #kill everything
-                        #elif QUERY in packet.data and packet.data[QUERY] == ROUTER:
-                        #packet.next()
-                        #packet.addDest(ROUTER, EXEC)
-                        #packet[STATUS] = str(self.devTable.keys())
-                        
+                        if QUERY in packet.data and packet.data[QUERY] == ROUTER:
+                            packet.next()
+                            packet.addDest(ROUTER, EXEC)
+                            packet[STATUS] = str(self.devTable.keys())
+                        elif STATUS in packet.data and packet[STATUS] == "register":
+                            #Registering a device
+                            self.devTable[packet[RETURN]] = s
+                            tmpConnections.remove(s)
+                            
+                        if packet.data[TARGET] == ROUTER:
+                            continue
+
                         #Route to next
                         if packet.data[TARGET] not in self.devTable:
                             unknown = packet.next() #pop off unknonw target

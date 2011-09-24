@@ -19,7 +19,7 @@ import Queue
 import time, random
 import protocol
 import router
-from constants import SEND, DELETE, EXEC, STATUS, TIMEOUT, ERROR
+from constants import SEND, DELETE, EXEC, STATUS, TIMEOUT, ERROR, ROUTER
 from constants import QUERY, NAME, MODEL, SN, RETURN, TYPE
 
 class Device(router.Node):
@@ -67,9 +67,17 @@ class Device(router.Node):
                     att = self.attribute
                     packet[STATUS] = "\n".join([att[NAME], att[MODEL], att[SN]])
 
+                elif STATUS in packet.data:
+                    if packet[STATUS] == "register":
+                        #Register device with router
+                        packet.addDest(self.name, ROUTER)
+                        packet[RETURN] = self.name
+
                 else:
                     packet.addDest(self.name, EXEC)
                     packet[ERROR] = "Not a valid command for {}: {}".format(self.name, request)
+
+                self.router.send(packet)
                 
 
     #def send(self, packet):
