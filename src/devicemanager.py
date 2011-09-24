@@ -23,8 +23,8 @@ import multiprocessing
 
 class DeviceManager(router.Node):
     """Provides methods to handle installed devices."""
-    def __init__(self):
-        router.Node.__init__(self)
+    def __init__(self, address=('localhost', 15000), akey='12345'):
+        router.Node.__init__(self, address, akey)
         self.name = DEVMAN
         self.deviceList = dict()
         self.outbox = Queue.Queue()
@@ -71,6 +71,8 @@ class DeviceManager(router.Node):
         d = self.devFac.constructDevice(filename)
         self.deviceList[username] = (d, multiprocessing.Event())
         d.name = username
+        d.address = self.address
+        d.akey = self.akey
         d.daemon = True
         d.procStop = self.deviceList[username][1]
         d.start()

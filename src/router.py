@@ -61,8 +61,10 @@ class Packet(object):
 class Node(multiprocessing.Process):
     """Inherit from this class and overload send method to be connected to 
 Router"""
-    def __init__(self):
+    def __init__(self, address=('localhost', 15000), akey='12345'):
         multiprocessing.Process.__init__(self)
+        self.address = address
+        self.akey = akey
         self.name = ""
         self.in_packetQueue = Queue.Queue()
         self.out_packetQueue = Queue.Queue()
@@ -96,7 +98,7 @@ Router"""
         raise AttributeError("Must overload process method")
 
     def run(self):
-        self.connect(('localhost', 15000), '12345')
+        self.connect(self.address, self.akey)
         while not self.procStop.is_set():
             if not self.in_packetQueue.empty():
                 packet = self.in_packetQueue.get()
@@ -125,10 +127,10 @@ Router"""
 
 class Router(multiprocessing.Process):
     """Routes Packets to appropriate Device"""
-    def __init__(self):
+    def __init__(self, address=('', 15000), akey='12345'):
         multiprocessing.Process.__init__(self)
         self.devTable = {} #Contains dict of connections to device processes
-        self.server = Listener(('', 15000), authkey='12345')
+        self.server = Listener(address, authkey=akey)
         self.procStop = multiprocessing.Event()
 
     def run(self):
