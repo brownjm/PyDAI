@@ -21,7 +21,6 @@ def commandLine():
     cp.run()
 
 if __name__ == "__main__":
-    os.chdir("src")
     parser = argparse.ArgumentParser()
     parser.add_argument("--test", action="store_true", default=False,
                         help="Run the unit tests")
