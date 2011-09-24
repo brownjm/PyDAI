@@ -77,11 +77,7 @@ class Device(router.Node):
             packet[ERROR] = "Not a valid command for {}: {}".format(self.name, request)
 
         if not self.router == None:
-            self.router.send(packet)
-                
-
-    #def send(self, packet):
-    #    self.router.send(packet) 
+            self.sendToRouter(packet)
 
     def read(self):
         """Read data from the physical device via Protocol class."""

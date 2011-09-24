@@ -219,7 +219,7 @@ class CursesPrompt(Executable):
                         
                 if not handled:
                     packet = self.parser.package(commandList)
-                    self.router.send(packet)
+                    self.sendToRouter(packet)
             except Exception as ex:
                 self.addToOutput(self.currentWin, "Error Occured:\n")
                 self.addToOutput(self.currentWin, traceback.format_exc())
@@ -231,8 +231,8 @@ class CursesPrompt(Executable):
         pass
 
     def __handle_packets(self):
-        if not self.packetQueue.empty():
-            packet = self.packetQueue.get()
+        if not self.in_packetQueue.empty():
+            packet = self.in_packetQueue.get()
             if ERROR in packet.data:
                 self.addToOutput(self.currentWin, packet[ERROR])
             else:

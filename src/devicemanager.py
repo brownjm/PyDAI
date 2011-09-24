@@ -57,7 +57,7 @@ class DeviceManager(router.Node):
             else:
                 self.removeDevice(name, packet)
                 #packet.addDest(DEVMAN, name)
-                return
+                #return
                 
         elif QUERY in packet.data:
             packet.addDest(DEVMAN, EXEC)
@@ -67,7 +67,7 @@ class DeviceManager(router.Node):
             packet.addDest(DEVMAN, EXEC)
             packet[ERROR] = "{} cannot do anything with packet:\n{}".format(DEVMAN, packet)
             
-        self.router.send(packet)
+        self.sendToRouter(packet)
 
     def addDevice(self, filename, username):
         d = self.devFac.constructDevice(filename)
@@ -81,6 +81,8 @@ class DeviceManager(router.Node):
         d = self.deviceList[username][0]
         d.procStop.set()
         d.join()
+        packet.addDest(username, EXEC)
+        packet[STATUS] = "Device deleted: {}".format(username)
         self.deviceList.pop(username)
 
 if __name__ == '__main__':

@@ -60,7 +60,8 @@ Router"""
     def __init__(self):
         multiprocessing.Process.__init__(self)
         self.name = ""
-        self.packetQueue = Queue.Queue()
+        self.in_packetQueue = Queue.Queue()
+        self.out_packetQueue = Queue.Queue()
         self.router = None
         self.procStop = multiprocessing.Event()
         self._stop = threading.Event()
@@ -73,7 +74,7 @@ Router"""
         self.rt = threading.Thread(target=self.__routerThread, args=())
         self.rt.daemon = True
         self.rt.start()
-        self.router.send(p)
+        self.sendToRouter(p)
 
     def disconnect(self):
         name = self.name
@@ -81,13 +82,11 @@ Router"""
         packet.addDest(name, EXEC)
         packet[DELETE] = name
         packet[STATUS] = "Device deleted: {}".format(name)
-        self.router.send(packet)
+        self.sendToRouter(packet)
         self.router.close()
         self.router = None
         self._stop.set()
-        print "SetStop"
         self.rt.join()
-        print "Dead"
 
     def process(self, packet):
         raise AttributeError("Must overload process method")
@@ -95,8 +94,8 @@ Router"""
     def run(self):
         self.connect(('localhost', 15000), '12345')
         while not self.procStop.is_set():
-            if not self.packetQueue.empty():
-                packet = self.packetQueue.get()
+            if not self.in_packetQueue.empty():
+                packet = self.in_packetQueue.get()
                 self.process(packet)
             else:
                 time.sleep(.01)
@@ -105,19 +104,22 @@ Router"""
 
     def __routerThread(self):
         r = self.router
-        while not self._stop.isSet():
-            inr, outr, excr = select.select([r], [], [], .01)
-            for router in inr:
-                p = router.recv()
-                self.packetQueue.put(p)
+        while (not self._stop.isSet()):# or (not self.out_packetQueue.empty()):
+            inr, outr, excr = select.select([r], [r], [], .1)
+            for router_in in inr:
+                p = router_in.recv()
+                self.in_packetQueue.put(p)
+            for router_out in outr:
+                if not self.out_packetQueue.empty():
+                    packet = self.out_packetQueue.get()
+                    router_out.send(packet)
+
+            time.sleep(.01)
+    def sendToRouter(self, packet):
+        self.out_packetQueue.put(packet)
 
     def send(self, packet):
         raise AttributeError("Must overload send method")
-
-    def _callback(self):
-        """Method for asynch callbacks to perform post work updates, i.e. updating a UI"""
-        pass
-
 
 class Router(multiprocessing.Process):
     """Routes Packets to appropriate Device"""
@@ -170,7 +172,7 @@ class Router(multiprocessing.Process):
                         #Close connection
                         s.close()
                         if s in tmpConnections:
-                            tmpConnections.remove()
+                            tmpConnections.remove(s)
                         
                         for dev in self.devTable.keys():
                             if self.devTable[dev] == s:
@@ -187,31 +189,6 @@ class Router(multiprocessing.Process):
         deviceThread = self.devTable.pop(device_name)
         deviceThread.disconnect()
 
-
-class WorkerThread(threading.Thread):
-    def __init__(self, dev):
-        threading.Thread.__init__(self)
-        self.device = dev
-        self.packetPool = Queue.Queue()
-
-    def disconnect(self):
-        self.device = None
-
-    def send(self, packet):
-        self.packetPool.put(packet)
-        if not self.isAlive():
-            self.start()
-
-    def run(self):
-        while not self.packetPool.empty():
-            packet = self.packetPool.get();
-            self.device.send(packet)
-            if not len(packet.dest) == 0:
-                self.router.send(packet)
-
-        threading.Thread.__init__(self)
-        if not self.device == None:
-            self.device._callback()
 
 if __name__ == "__main__":
     r = Router()
