@@ -25,8 +25,8 @@ import env
 from constants import EXIT, EXEC, DEVMAN, ENV, HELP
 
 class Executable(router.Node):
-    def __init__(self):
-        router.Node.__init__(self)
+    def __init__(self, address, akey):
+        router.Node.__init__(self, address, akey)
         self.helper = Helper(parse.commands)
         # commands specific to executable
         self.commands = {EXIT : self._exit,
@@ -37,7 +37,7 @@ class Executable(router.Node):
         self.env = env.Environment()
 
         self.name = EXEC
-        self.connect(('localhost', 15000), '12345')
+        self.connect(self.address, self.akey)
 
     def send(self, packet):
         raise Exception("Required to override")
