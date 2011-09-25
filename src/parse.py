@@ -151,6 +151,9 @@ Usage: exit"""
     def __init__(self, wordList):
         Command.__init__(self, wordList, 0)
 
+    def modPacket(self, packet):
+        pass
+
 class Help(Command):
     """Provides helpful information about commands.
 Usage: help or help [command name]"""
@@ -160,11 +163,17 @@ Usage: help or help [command name]"""
         else:
             Command.__init__(self, wordList, 1)
 
+    def modPacket(self, packet):
+        pass
+
 class View(Command):
     """Switches focus to specified window.
 Usage: view [window name]"""
     def __init__(self, wordList):
         Command.__init__(self, wordList, 1)
+
+    def modPacket(self, packet):
+        pass
 
 
 # dictionary of available commands
