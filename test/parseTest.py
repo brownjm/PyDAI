@@ -21,47 +21,68 @@ import unittest
 from collections import deque
 from src.parse import *
 from src.router import Packet
+from src.constants import *
+
 p = Parser(commands, rules)
+packet = Packet()
 
 class ValidInput(unittest.TestCase):
     """Test that valid input produces correct commands and packets."""
-    validStrings = (("new dev", [New(deque(["new", "dev"]))], 
-                     Packet()),
+    validStrings = (("new dev", 
+                     [New], 
+                     {"new":"dev", SOURCE:EXEC, TARGET:DEVMAN}, 
+                     deque([DEVMAN])),
 
-                    ("delete dev", [Delete(deque(["delete", "dev"]))],
-                     Packet()),
+                    ("delete dev", 
+                     [Delete],
+                     {"delete":"dev", SOURCE:EXEC, TARGET:DEVMAN},
+                     deque([DEVMAN])),
 
-                    ("send data to dev", [Send(deque(["send", "data"])), 
-                                          To(deque(["to", "dev"]))],
-                     Packet()),
+                    ("send data to dev", 
+                     [Send, To],
+                     {"send":"data", SOURCE:EXEC, TARGET:"dev"},
+                     deque(["dev"])),
 
-                    ("query dev", [Query(deque(["query", "dev"]))],
-                     Packet()),
+                    ("query dev", 
+                     [Query],
+                     {"query":"dev", SOURCE:EXEC, TARGET:"dev"},
+                     deque(["dev"])),
 
-                    ("exit", [Exit(deque(["exit"]))],
-                     Packet()),
+                    ("exit", 
+                     [Exit],
+                     {},
+                     deque([])),
 
-                    ("help", [Help(deque(["help"]))],
-                     Packet()),
+                    ("help", 
+                     [Help],
+                     {},
+                     deque([])),
 
-                    ("help item", [Help(deque(["help", "item"]))],
-                     Packet()),
+                    ("help item", 
+                     [Help],
+                     {},
+                     deque([])),
 
-                    ("view dev", [View(deque(["view", "dev"]))],
-                     Packet())
+                    ("view dev", 
+                     [View],
+                     {},
+                     deque([]))
                     )
 
     def testParse(self):
         """Test that valid input produces a valid command set."""
-        for string, commands, packet in self.validStrings:
+        for string, commandClass, data, dest in self.validStrings:
             result = p.parse(string)
-            self.assertEqual(result, commands)
+            result = [type(item) for item in result]
+            self.assertEqual(result, commandClass)
 
     def testPackage(self):
         """Test that valid command sets produce valid packets."""
-        for string, commands, packet in self.validStrings:
-            result = p.package(commands)
-            self.assertEqual(result, packet)
+        for string, commandClass, data, dest in self.validStrings:
+            commandList = p.parse(string)
+            result = p.package(commandList)
+            self.assertEqual(result.data, data)
+            self.assertEqual(result.dest, dest)
 
 
 if __name__ == "__main__":
