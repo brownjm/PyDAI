@@ -18,7 +18,7 @@
 import Queue
 import router
 from devicefactory import DeviceFactory, FileNotFoundError
-from constants import NEW, DEVMAN, EXEC, STATUS, DELETE, QUERY, ERROR
+from constants import NEW, DEVMAN, EXEC, STATUS, DELETE, QUERY, ERROR, RETURN
 import multiprocessing
 
 class DeviceManager(router.Node):
@@ -59,7 +59,8 @@ class DeviceManager(router.Node):
                 
         elif QUERY in packet.data:
             packet.addDest(DEVMAN, EXEC)
-            packet[STATUS] = str(self.deviceList)
+            packet[STATUS] = "Current devices connected:"
+            packet[RETURN] = self.deviceList.keys()
             
         else:
             packet.addDest(DEVMAN, EXEC)
