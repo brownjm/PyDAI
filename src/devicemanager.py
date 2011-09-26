@@ -18,7 +18,8 @@
 import Queue
 import router
 from devicefactory import DeviceFactory, FileNotFoundError
-from constants import NEW, DEVMAN, EXEC, STATUS, DELETE, QUERY, ERROR, RETURN
+from constants import NEW, DEVMAN, EXEC
+from constants import STATUS, QUERY, ERROR, RETURN, KILL, DELETE
 import multiprocessing
 
 class DeviceManager(router.Node):
@@ -31,6 +32,9 @@ class DeviceManager(router.Node):
         self.devFac = DeviceFactory()
 
     def process(self, packet):
+        if KILL in packet.data:
+            self.procStop.set()
+
         if NEW in packet.data:
             name = packet.data[NEW]
             if name in self.deviceList:

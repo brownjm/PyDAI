@@ -42,6 +42,9 @@ def server(address, akey):
     r.start()
     d.start()
     print "Server is Running..."
+    d.join()
+    r.join()
+    print "Server is Shut Down..."
 
 def client(address, akey):
     cp = CursesPrompt(address, akey)

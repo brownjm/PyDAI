@@ -37,6 +37,7 @@ TO        = "to"         # sets destination
 QUERY     = "query"      # request information
 HELP      = "help"       # command to print helpful messages
 EXIT      = "exit"       # exits program
+KILL      = "kill"       # kills PyDAI server and exits client
 VIEW      = "view"       # switch view to specified window
 MAIN      = "main"       # main window name
 
