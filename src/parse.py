@@ -73,16 +73,23 @@ class ParseError(Exception):
 
 class Command(object):
     """Base class for all commands"""
-    def __init__(self, wordList, nargs=1):
+    def __init__(self, wordList, nargs=None):
         self.name = wordList.popleft()
         self.nargs = nargs
         self.args = []
-        if len(wordList) < nargs:
-            msg = "Command '{0}' expected {1} argument(s) and received {2}"
-            raise ParseError(msg.format(self.name, nargs, len(wordList)))
 
-        for n in range(nargs):
-            self.args.append(wordList.popleft())
+        for word in wordList:
+            if word not in commands.keys(): # then word must be an argument
+                self.args.append(word)
+            else: # word is a command
+                break
+
+        if (len(self.args) != self.nargs) and (self.nargs != None):
+            msg = "Command '{0}' expected {1} argument(s) and received {2}"
+            raise ParseError(msg.format(self.name, nargs, len(self.args)))
+
+        for n in range(len(self.args)):
+            wordList.popleft() # remove arguments that were placed in args
 
     def modPacket(self, packet):
         raise ParseError("Cannot create a packet from: {}".format(self.name))
@@ -120,10 +127,10 @@ class Send(Command):
     """Send a command to a device.
 Usage: send [device command] to [device name]"""
     def __init__(self, wordList):
-        Command.__init__(self, wordList, 1)
+        Command.__init__(self, wordList)
 
     def modPacket(self, packet):
-        packet[self.name] = self.args[0]
+        packet[self.name] = " ".join(self.args)
 
 class To(Command):
     """Sets the destination of a command.
@@ -168,10 +175,16 @@ class Help(Command):
     """Provides helpful information about commands.
 Usage: help or help [command name]"""
     def __init__(self, wordList):
-        if len(wordList) == 1: # help with no arguments
-            Command.__init__(self, wordList, 0)
+        # help is special and does not call its base class,
+        # because Command does not parse commands names as arguments
+        self.name = wordList.popleft()
+        if len(wordList) == 0: # help with no arguments
+            self.nargs = 0
+            self.args = []
         else:
-            Command.__init__(self, wordList, 1)
+            self.nargs = 1
+            self.args = [wordList.popleft()]
+            wordList.clear()
 
     def modPacket(self, packet):
         pass
@@ -211,6 +224,7 @@ rules = [set([New]),
 
 if __name__ == "__main__":
     p = Parser(commands, rules)
-    
-    com = p.parse("new dev1")
+    s = "help dev1"
+    com = p.parse(s)
     packet = p.package(com)
+    print packet
