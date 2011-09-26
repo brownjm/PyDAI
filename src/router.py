@@ -21,7 +21,8 @@ Nodes"""
 from collections import deque
 import threading
 import Queue
-from constants import QUERY, ROUTER, EXEC, STATUS, TARGET, SOURCE, ERROR, DELETE
+from constants import ROUTER, DEVMAN, EXEC, TARGET, SOURCE
+from constants import QUERY, STATUS, ERROR, DELETE, KILL
 from multiprocessing.connection import Listener, Client
 import multiprocessing
 import select
@@ -70,7 +71,6 @@ Router"""
         self.out_packetQueue = Queue.Queue()
         self.router = None
         self.procStop = multiprocessing.Event()
-        self._stop = threading.Event()
 
     def connect(self, address, key):
         self.router = Client(address, authkey=key)
@@ -91,7 +91,8 @@ Router"""
         self.sendToRouter(packet)
         self.router.close()
         self.router = None
-        self._stop.set()
+        if not self.procStop.is_set():
+            self.procStop.set()
         self.rt.join()
 
     def process(self, packet):
@@ -110,15 +111,22 @@ Router"""
 
     def __routerThread(self):
         r = self.router
-        while (not self._stop.isSet()):# or (not self.out_packetQueue.empty()):
+        while not self.procStop.is_set():
             inr, outr, excr = select.select([r], [r], [], .1)
-            for router_in in inr:
-                p = router_in.recv()
-                self.in_packetQueue.put(p)
+            try:
+                for router_in in inr:
+                    p = router_in.recv()
+                    self.in_packetQueue.put(p)
+            except EOFError:
+                #Handles unexpected close from router
+                self.procStop.set()
+                break
+
             for router_out in outr:
                 if not self.out_packetQueue.empty():
-                    packet = self.out_packetQueue.get()
-                    router_out.send(packet)
+                    if not self.procStop.is_set():
+                        packet = self.out_packetQueue.get()
+                        router_out.send(packet)
 
             time.sleep(.01)
 
@@ -148,29 +156,8 @@ class Router(multiprocessing.Process):
                 else:
                     try:
                         packet = s.recv()
-
-                        #TODO: Add ability to gracefully KILL everything connected
-
-                        if QUERY in packet.data and packet.data[QUERY] == ROUTER:
-                            packet.next()
-                            packet.addDest(ROUTER, EXEC)
-                            packet[STATUS] = str(self.devTable.keys())
-                        elif STATUS in packet.data and packet[STATUS] == "register":
-                            #Registering a device
-                            self.devTable[packet[SOURCE]] = s
-                            tmpConnections.remove(s)
-                            #print "Device " + packet[SOURCE] + " registered"
-                        
-                        if packet.data[TARGET] == ROUTER:
-                            continue
-
-                        #Route to next
-                        if packet.data[TARGET] not in self.devTable:
-                            unknown = packet.next() #pop off unknonw target
-                            packet.addDest(ROUTER, EXEC)
-                            packet[ERROR] = "Target device not found: {}".format(unknown)
-                            
-                        self.devTable[packet.next()].send(packet)
+                        if packet:
+                            self.__handle_packet(s, packet, tmpConnections)
                     except EOFError:
                         #Close connection
                         s.close()
@@ -183,14 +170,33 @@ class Router(multiprocessing.Process):
                                 #print "Device " + dev + " removed."
                                 break
 
-    def connect(self, device_name, device):
-        device.router = self
-        self.devTable[device_name] = WorkerThread(device)
-        self.devTable[device_name].router = self
+    def __handle_packet(self, s, packet, t):
+        if KILL in packet.data:
+            packet.next()
+            packet.addDest(ROUTER, DEVMAN)
+            self.procStop.set()
 
-    def disconnect(self, device_name):
-        deviceThread = self.devTable.pop(device_name)
-        deviceThread.disconnect()
+        if QUERY in packet.data and packet.data[QUERY] == ROUTER:
+            packet.next()
+            packet.addDest(ROUTER, EXEC)
+            packet[STATUS] = str(self.devTable.keys())
+        elif STATUS in packet.data and packet[STATUS] == "register":
+            #Registering a device
+            self.devTable[packet[SOURCE]] = s
+            t.remove(s)
+            #print "Device " + packet[SOURCE] + " registered"
+                        
+        if packet.data[TARGET] == ROUTER:
+            return
+
+        #Route to next
+        if packet.data[TARGET] not in self.devTable:
+            unknown = packet.next() #pop off unknonw target
+            packet.addDest(ROUTER, EXEC)
+            packet[ERROR] = "Target device not found: {}".format(unknown)
+
+        if not self.procStop.is_set():
+            self.devTable[packet.next()].send(packet)
 
 
 if __name__ == "__main__":
