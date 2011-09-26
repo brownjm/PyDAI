@@ -72,7 +72,7 @@ specific values of their device."""
                     raise ConfigFileError(fn, line)
                 attributeDict[entry[0]] = entry[1]
 
-            elif ":" in line: # must be a command
+            elif "|" in line: # must be a command
                 entry = line.split("|")
                 entry = [word.strip() for word in entry] # strip whitespace
                 if len(entry) is not 3:
