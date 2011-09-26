@@ -19,7 +19,7 @@
 
 from collections import deque
 import router
-from constants import EXEC, DEVMAN, NEW, DELETE, SEND, TO, QUERY
+from constants import EXEC, DEVMAN, ROUTER, NEW, DELETE, SEND, TO, QUERY
 from constants import EXIT, KILL, HELP, VIEW
 
 class Parser(object):
@@ -161,7 +161,8 @@ Usage: kill"""
         Command.__init__(self, wordList, 0)
 
     def modPacket(self, packet):
-        pass
+        packet.addDest(EXEC, ROUTER)
+        packet[self.name] = "all"
 
 class Help(Command):
     """Provides helpful information about commands.
