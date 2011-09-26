@@ -40,9 +40,12 @@ class Device(router.Node):
                 packet[RETURN] = data
                 packet[TYPE] = "string"
                 
-            elif request in self.command:
-                com, returnType = self.command[packet.data[SEND]]
-                self.write(com)
+            elif request.split()[0] in self.command:
+                commandAndArgs, returnType = self.command[packet.data[SEND]]
+                args = commandAndArgs.split()
+                command = args.pop(0) # first word is the command
+                command = command.format(*args) # insert args, if any
+                self.write(command)
                 time.sleep(float(self.attribute[TIMEOUT]))
                 response = self.read()
                 packet.addDest(self.name, EXEC)
