@@ -16,7 +16,8 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from executable import Executable
-from constants import EXIT, STATUS, NEW, DELETE, SOURCE, ERROR, QUERY
+from constants import EXIT, STATUS, NEW, DELETE, SOURCE, ERROR, QUERY, RETURN
+from constants import EXEC, DEVMAN
 import curses
 import traceback
 from collections import deque
@@ -203,6 +204,9 @@ class CursesPrompt(Executable):
 
     def run(self):
         self.addToOutput("main", self.getWelcome())
+        commandList = self.parser.parse("query devman")
+        packet = self.parser.package(commandList)
+        self.sendToRouter(packet)
         line = ''
         while line != EXIT:
             try:
@@ -234,7 +238,7 @@ class CursesPrompt(Executable):
                 self.addToOutput(self.currentWin, packet[ERROR])
             else:
                 if STATUS in packet.data:
-                    self.addToOutput("main", repr(packet[STATUS]))
+                    self.addToOutput("main", str(packet[STATUS]))
 
                 if NEW in packet.data:
                     self.deviceWins[packet[SOURCE]] = [False, []]
@@ -246,7 +250,17 @@ class CursesPrompt(Executable):
                     self.deviceWins.pop(packet[SOURCE])
 
                 if QUERY in packet.data:
-                    self.addToOutput(self.currentWin, "You want to query yourself?\nWhat does that even mean?")
+                    if packet[SOURCE] == EXEC:
+                        self.addToOutput(self.currentWin, "You want to query yourself?\nWhat does that even mean?")
+                    elif packet[SOURCE] == DEVMAN:
+                        if len(packet[RETURN]) == 0:
+                            self.addToOutput(self.currentWin, "None")
+                        else:
+                            packet[RETURN].reverse()
+                            for dev in packet[RETURN]:
+                                self.addToOutput(self.currentWin, dev)
+                                if not dev in self.deviceWins:
+                                    self.deviceWins[dev] = [False, []]
 
 if __name__ == '__main__':
     try:
