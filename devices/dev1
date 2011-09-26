@@ -14,10 +14,13 @@ timeout  = 0.05
 
 # Device Commands
 # Commands have the following form
-# UserDefinedName : ProtocolCommand : ReturnType
+# UserDefinedName | ProtocolCommand | ReturnType
+# ProtocolCommand accepts arguments signified by {}
+# Example: waveform | WVFRM{} | string
+# Usage: waveform 1 -> WVFRM1
 @commands
-name   : getName   : string
-vendor : getVendor : string
-model  : getModel  : string
-sn     : getSN     : string
-data   : getData   : string
+name   | getName   | string
+vendor | getVendor | string
+model  | getModel  | string
+sn     | getSN     | string
+data   | getData   | string
