@@ -21,12 +21,13 @@ Nodes"""
 from collections import deque
 import threading
 import Queue
-from constants import ROUTER, DEVMAN, EXEC, TARGET, SOURCE
-from constants import QUERY, STATUS, ERROR, DELETE, KILL
 from multiprocessing.connection import Listener, Client
 import multiprocessing
 import select
 import time
+import traceback
+from constants import ROUTER, DEVMAN, EXEC, TARGET, SOURCE
+from constants import QUERY, STATUS, ERROR, DELETE, KILL
 
 class Packet(object):
     """Data bundle including destination information"""
@@ -103,7 +104,13 @@ Router"""
         while not self.procStop.is_set():
             if not self.in_packetQueue.empty():
                 packet = self.in_packetQueue.get()
-                self.process(packet)
+                try:
+                    self.process(packet)
+                except Exception as ex:
+                    # catch unexpected errors and report with packets
+                    packet[ERROR] = traceback.format_exc(ex)
+                    packet.addDest(self.name, EXEC)
+                    self.sendToRouter(packet)
             else:
                 time.sleep(.01)
                 
