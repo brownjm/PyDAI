@@ -16,7 +16,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from executable import Executable
-from constants import EXIT, STATUS, NEW, DELETE, SOURCE, ERROR, QUERY, RETURN
+from constants import EXIT, STATUS, NEW, DELETE, SOURCE, ERROR, QUERY, RETURN, KILL
 from constants import EXEC, DEVMAN
 import curses
 import traceback
@@ -42,7 +42,7 @@ class CursesPrompt(Executable):
     def __main_loop(self, prompt_string):
         input = array('c')
 
-        while 1:
+        while not self.procStop.is_set():
             i = self.screen.getch(self.yx[0]-2, len(input))
             if i == curses.KEY_ENTER or i == 10:
                 break
@@ -208,26 +208,35 @@ class CursesPrompt(Executable):
         packet = self.parser.package(commandList)
         self.sendToRouter(packet)
         line = ''
-        while line != EXIT:
+        while not self.procStop.is_set():
             try:
                 line = self.__main_loop(">")
                 self.env.addToHistory(line)
                 self.addToOutput(self.currentWin, ''.join(["\n>>> ", line]))
 
-                commandList = self.parser.parse(line)
-                handled = False
-                for command in commandList:
-                    if command.name in self.commands:
-                        self.addToOutput(self.currentWin, self.commands[command.name](command))
-                        handled = True
+                if not line == '':
+                    commandList = self.parser.parse(line)
+                    handled = False
+                    for command in commandList:
+                        if command.name in self.commands:
+                            self.addToOutput(self.currentWin, self.commands[command.name](command))
+                            handled = True
                         
-                if not handled:
-                    packet = self.parser.package(commandList)
-                    self.sendToRouter(packet)
+                    if not handled:
+                        packet = self.parser.package(commandList)
+                        self.sendToRouter(packet)
             except Exception as ex:
                 self.addToOutput(self.currentWin, "Error Occured:\n")
                 self.addToOutput(self.currentWin, traceback.format_exc())
                 line = ''
+
+        if not line == EXIT:
+            self.addToOutput(self.currentWin, "Server Shut Down...\nPress any key to exit...")
+            self.procStop.set()
+            self.screen.nodelay(0)
+            self.__update_screen('')
+            curses.doupdate()
+            i = self.screen.getch(self.yx[0]-2, 0)
 
         curses.endwin()
 
@@ -261,6 +270,7 @@ class CursesPrompt(Executable):
                                 self.addToOutput(self.currentWin, dev)
                                 if not dev in self.deviceWins:
                                     self.deviceWins[dev] = [False, []]
+                    
 
 if __name__ == '__main__':
     try:
