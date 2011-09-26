@@ -41,16 +41,24 @@ class Device(router.Node):
                 packet[TYPE] = "string"
                 
             elif request.split()[0] in self.command:
-                commandAndArgs, returnType = self.command[packet.data[SEND]]
-                args = commandAndArgs.split()
-                command = args.pop(0) # first word is the command
-                command = command.format(*args) # insert args, if any
-                self.write(command)
-                time.sleep(float(self.attribute[TIMEOUT]))
-                response = self.read()
-                packet.addDest(self.name, EXEC)
-                packet[RETURN] = response
-                packet[TYPE] = returnType
+                command, returnType = self.command[request.split()[0]]
+                args = request.split()
+                args.pop(0) # first word is the command
+                print args, len(args)
+                numargs = command.count("{}")
+                if numargs == len(args):
+                    command = command.format(*args) # insert args, if any
+                    print command
+                    self.write(command)
+                    time.sleep(float(self.attribute[TIMEOUT]))
+                    response = self.read()
+                    packet.addDest(self.name, EXEC)
+                    packet[RETURN] = response
+                    packet[TYPE] = returnType
+                else:
+                    packet.addDest(self.name, EXEC)
+                    msg = "Device command signature does not match any in configuration file.\nYou requested command: {}\nWith these arguments:  {}"
+                    packet[ERROR] = msg.format(command, args)
                 
             else:
                 packet.addDest(self.name, EXEC)
@@ -80,3 +88,14 @@ class Device(router.Node):
         """Write data to the physical device via Protocol class"""
         self.protocol.write(message)
 
+
+if __name__ == "__main__":
+    import parse
+    import devicefactory
+    p = parse.Parser(parse.commands, parse.rules)
+    df = devicefactory.DeviceFactory()
+
+    packet = p.package(p.parse("send data 1  3 4 to dev1"))
+    dev1 = df.constructDevice("dev1")
+    dev1.process(packet)
+    print packet
