@@ -20,7 +20,7 @@
 from collections import deque
 import router
 from constants import EXEC, DEVMAN, NEW, DELETE, SEND, TO, QUERY
-from constants import EXIT, HELP, VIEW
+from constants import EXIT, KILL, HELP, VIEW
 
 class Parser(object):
     """Creates packets from input strings"""
@@ -154,6 +154,15 @@ Usage: exit"""
     def modPacket(self, packet):
         pass
 
+class Kill(Command):
+    """Kills PyDAI server and exits client.
+Usage: kill"""
+    def __init__(self, wordList):
+        Command.__init__(self, wordList, 0)
+
+    def modPacket(self, packet):
+        pass
+
 class Help(Command):
     """Provides helpful information about commands.
 Usage: help or help [command name]"""
@@ -184,6 +193,7 @@ commands = {NEW: New,
             TO: To,
             QUERY: Query,
             EXIT: Exit,
+            KILL: Kill,
             HELP: Help,
             VIEW: View}
 
@@ -193,6 +203,7 @@ rules = [set([New]),
          set([Send, To]),
          set([Query]),
          set([Exit]),
+         set([Kill]),
          set([Help]),
          set([View])]
 
