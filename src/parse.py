@@ -165,10 +165,16 @@ class Help(Command):
     """Provides helpful information about commands.
 Usage: help or help [command name]"""
     def __init__(self, wordList):
-        if len(wordList) == 1: # help with no arguments
-            Command.__init__(self, wordList, 0)
+        # help is special and does not call its base class,
+        # because Command does not parse commands names as arguments
+        self.name = wordList.popleft()
+        if len(wordList) == 0: # help with no arguments
+            self.nargs = 0
+            self.args = []
         else:
-            Command.__init__(self, wordList, 1)
+            self.nargs = 1
+            self.args = [wordList.popleft()]
+            wordList.clear()
 
     def modPacket(self, packet):
         pass
@@ -206,6 +212,7 @@ rules = [set([New]),
 
 if __name__ == "__main__":
     p = Parser(commands, rules)
-    s = "send data 1 2 to dev1"
+    s = "help dev1"
     com = p.parse(s)
     packet = p.package(com)
+    print packet
