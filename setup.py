@@ -16,14 +16,15 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from distutils.core import setup
+from glob import glob
 
 setup(name='PyDAI',
-      version='0.01',
+      version='0.1',
       description='Python Data Acquisition and Instrumentation',
       author='Jeffrey M Brown, Greg A Cohoon, Kyle T Taylor',
       url='https://github.com/brownjm/PyDAI',
       license='GPL',
-      packages=['pydai'],
-      package_dir={'pydai':'', 'pydai':'test'},
-      package_data={'pydai':['devices/*']}
+      packages=['src', 'test'],
+      package_dir={'pydai':''},
+      package_data={'':['devices']}
       )
