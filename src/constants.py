@@ -28,6 +28,7 @@ DEVMAN    = "devman"     # device manager
 EXEC      = "exec"       # executable
 ROUTER    = "router"     # router
 ENV       = "env"        # environment
+DATAMAN   = "dataman"    # data manager
 
 # User Commands
 NEW       = "new"        # create something
