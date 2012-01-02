@@ -1,6 +1,6 @@
 #    PyDAI - Python Data Acquisition and Instrumentation
 #
-#    Copyright (C) 2011 Jeffrey M Brown, Greg A Cohoon, Kyle T Taylor
+#    Copyright (C) 2012 Jeffrey M Brown, Greg A Cohoon, Kyle T Taylor
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
