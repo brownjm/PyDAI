@@ -214,7 +214,7 @@ class CursesPrompt(Executable):
                 self.env.addToHistory(line)
                 self.addToOutput(self.currentWin, ''.join(["\n>>> ", line]))
 
-                if not line == '':
+                if not line.strip() == '': # if line has chars other than whitespace
                     commandList = self.parser.parse(line)
                     handled = False
                     for command in commandList:
