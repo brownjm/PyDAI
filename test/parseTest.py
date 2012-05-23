@@ -85,5 +85,23 @@ class ValidInput(unittest.TestCase):
             self.assertEqual(result.dest, dest)
 
 
+class InvalidInput(unittest.TestCase):
+    """Tests that invalid input strings are handle properly"""
+    invalidStrings = (('', []),
+                      (' ', []),
+                      ('isnefins', []),
+                      ('39xnf8s', []),
+                      (';', []),
+                      ('#', []),
+                      ('$', []),
+                      (r'\b', [])
+                      )
+
+    def testParse(self):
+        """Test that invalid input produces an exception"""
+        for string, commands in self.invalidStrings:
+            self.assertRaises(ParseError, p.parse, string)
+
+
 if __name__ == "__main__":
     unittest.main()
