@@ -16,18 +16,42 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import curses
+import traceback
+
 stdscr = curses.initscr()
 
-begin_x = 20 ; begin_y = 7
-height = 5 ; width = 40
+begin_x = 0 ; begin_y = 0
+height = 5 ; width = 80
 
 try:
     win = curses.newwin(height, width, begin_y, begin_x)
-    i = stdscr.getch(0, 10)
-    curses.echo()
-#win.addstr(i)
-    #stdscr.refresh()
-except:
-    pass
+    win.keypad(0)
+    #win.nodelay(1)
+    #win.timeout(50)
+
+    win.refresh()
+    while True:
+        win.addstr(0,0,'Press a key to view the keycode, press q to quit')
+
+        i = win.getch()
+        
+        if i == ord('q'):
+            break
+        else:
+            output = "Key: " + str(i) + "\n"
+            if not i == -1:
+                output = output + "Char: " + chr(i) + "\n"
+            win.clear()
+            win.addstr(2,1,output)
+
+    curses.endwin()
+
+except Exception as ex:
+    curses.endwin()
+    
+    tb = traceback.format_exc()
+    print "Error:\n"
+    print tb
+
 finally:
     curses.endwin()
