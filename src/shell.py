@@ -62,7 +62,7 @@ class CursesPrompt(Executable):
             elif i == 519 or i == 560:
                 #Control-Down or Control-Up
                 self._scrollwin(i)
-            elif i == curses.KEY_BACKSPACE:
+            elif i == curses.KEY_BACKSPACE or i == 127:
                 if len(input) > 0:
                     input.pop()
             elif i == curses.KEY_RESIZE:
