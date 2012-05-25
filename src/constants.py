@@ -54,8 +54,8 @@ ERROR     = "error"      # error message
 NAME      = "name"
 VENDOR    = "vendor"
 MODEL     = "model"
-SN        = "sn"
-PROTOCOL  = "protocol"
+SN        = "sn"         # serial number
+PROTOCOL  = "protocol"   # communication protocol, such as usb
 TIMEOUT   = "timeout"    # time to wait between write and read of device
 
 # Protocol types
