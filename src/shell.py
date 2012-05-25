@@ -23,6 +23,8 @@ import traceback
 from collections import deque
 from array import array
 
+DEBUG_FLAG = True
+
 class CursesPrompt(Executable):
     def __init__(self, address=('localhost', 15000), akey='12345'):
         Executable.__init__(self, address, akey)
@@ -224,12 +226,14 @@ class CursesPrompt(Executable):
                         
                     if not handled:
                         packet = self.parser.package(commandList)
+                        if DEBUG_FLAG:
+                            self.addToOutput(self.currentWin, "Sent: {}".format(packet))
                         self.sendToRouter(packet)
             except Exception as ex:
                 self.addToOutput(self.currentWin, "Error Occured:\n")
                 self.addToOutput(self.currentWin, traceback.format_exc())
                 line = ''
-
+        
         if not line == EXIT:
             self.addToOutput(self.currentWin, "Server Shut Down...\nPress any key to exit...")
             self.procStop.set()
@@ -243,6 +247,8 @@ class CursesPrompt(Executable):
     def __handle_packets(self):
         if not self.in_packetQueue.empty():
             packet = self.in_packetQueue.get()
+            if DEBUG_FLAG:
+                self.addToOutput(self.currentWin, "Received: {}".format(packet))
             if ERROR in packet.data:
                 self.addToOutput(self.currentWin, packet[ERROR])
             else:
