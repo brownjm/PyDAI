@@ -104,8 +104,7 @@ class Command(object):
 
 class New(Command):
     """Creates a new device from specified configuration file.
-Usage: new [config filename]
-"""
+Usage: new [config filename]"""
     def __init__(self, wordList):
         Command.__init__(self, wordList, 1)
 
@@ -133,7 +132,7 @@ Usage: send [device command] to [device name]"""
         packet[self.name] = " ".join(self.args)
 
 class To(Command):
-    """Sets the destination of a command.
+    """Set the destination of a command.
 Usage: send [device command] to [device name]"""
     def __init__(self, wordList):
         Command.__init__(self, wordList, 1)
@@ -153,7 +152,7 @@ Usage: query [device name]"""
         packet[self.name] = dev
 
 class Exit(Command):
-    """Exits the program.
+    """Exit the client. Server will continue running if it was started separately.
 Usage: exit"""
     def __init__(self, wordList):
         Command.__init__(self, wordList, 0)
@@ -162,7 +161,7 @@ Usage: exit"""
         pass
 
 class Kill(Command):
-    """Kills PyDAI server and exits client.
+    """Shutdown PyDAI server and exit client.
 Usage: kill"""
     def __init__(self, wordList):
         Command.__init__(self, wordList, 0)
