@@ -25,6 +25,21 @@ from array import array
 
 DEBUG_FLAG = True
 
+def wrap(text, width):
+    """
+    A word-wrap function that preserves existing line breaks
+    and most spaces in the text. Expects that existing line
+    breaks are posix newlines (\n).
+    """
+    return reduce(lambda line, word, width=width: '%s%s%s' %
+                  (line,
+                   ' \n'[(len(line)-line.rfind('\n')-1
+                          + len(word.split('\n',1)[0]
+                                ) >= width)],
+                   word),
+                  text.split(' ')
+                  )
+
 class CursesPrompt(Executable):
     def __init__(self, address=('localhost', 15000), akey='12345'):
         Executable.__init__(self, address, akey)
@@ -147,6 +162,9 @@ class CursesPrompt(Executable):
     def addToOutput(self, win, outstr):
         if outstr == None or outstr == '':
             return
+
+        # wrap text to fit window
+        outstr = wrap(outstr, self.yx[1]-4)
 
         winLen = len(self.deviceWins[win][1])
         listToAdd = outstr.split('\n')
