@@ -18,8 +18,8 @@
 import Queue
 import router
 from devicefactory import DeviceFactory, FileNotFoundError
-from constants import NEW, DEVMAN, EXEC
-from constants import STATUS, QUERY, ERROR, RETURN, KILL, DELETE
+from constants import NEW, DEVMAN, EXEC, AUTO
+from constants import STATUS, QUERY, ERROR, RETURN, KILL, DELETE, RUN
 import multiprocessing
 
 class DeviceManager(router.Node):
@@ -52,6 +52,23 @@ class DeviceManager(router.Node):
                     packet.addDest(DEVMAN, EXEC)
                     packet[ERROR] = ex.msg
                     
+        elif RUN in packet.data:
+            name = packet.data[RUN]
+            if name in self.deviceList:
+                packet.addDest(DEVMAN, EXEC)
+                msg = "Script {0} already running.".format(name)
+                packet[ERROR] = msg
+
+            else:
+                try:
+                    self.addDevice(AUTO, name)
+                    packet.addDest(name, EXEC)
+                    packet[STATUS] = "Script running"
+
+                except FileNotFoundError as ex:
+                    packet.addDest(DEVMAN, EXEC)
+                    packet[ERROR] = ex.msg
+
         elif DELETE in packet.data:
             name = packet.data[DELETE]
             if not name in self.deviceList:

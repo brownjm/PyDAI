@@ -20,7 +20,7 @@
 from collections import deque
 import router
 from constants import EXEC, DEVMAN, ROUTER, NEW, DELETE, SEND, TO, QUERY
-from constants import EXIT, KILL, HELP, VIEW
+from constants import EXIT, KILL, HELP, VIEW, RUN
 
 class Parser(object):
     """Creates packets from input strings"""
@@ -197,6 +197,15 @@ Usage: view [window name]"""
     def modPacket(self, packet):
         pass
 
+class Run(Command):
+    """Runs a script file.
+Usage: run [script name]"""
+    def __init__(self, wordList):
+        Command.__init__(self, wordList, 1)
+
+    def modPacket(self, packet):
+        packet.addDest(EXEC, DEVMAN)
+        packet[self.name] = self.args[0]
 
 # dictionary of available commands
 # user defined name:  associated class
@@ -208,7 +217,8 @@ commands = {NEW: New,
             EXIT: Exit,
             KILL: Kill,
             HELP: Help,
-            VIEW: View}
+            VIEW: View,
+            RUN: Run}
 
 # sets of commands that constitute a complete packet
 rules = [set([New]),
@@ -218,7 +228,8 @@ rules = [set([New]),
          set([Exit]),
          set([Kill]),
          set([Help]),
-         set([View])]
+         set([View]),
+         set([Run])]
 
 
 if __name__ == "__main__":

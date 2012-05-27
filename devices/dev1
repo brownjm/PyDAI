@@ -24,3 +24,4 @@ vendor | getVendor | string
 model  | getModel  | string
 sn     | getSN     | string
 data   | getData{}   | string
+test   | testFunc    | string
