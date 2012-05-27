@@ -19,15 +19,19 @@ import router
 import device
 from constants import SEND, DELETE, EXEC, STATUS, TIMEOUT, ERROR, ROUTER
 from constants import QUERY, NAME, MODEL, SN, RETURN, TYPE
+import devicefactory
 
 class SimulatedDevice(device.Device):
     def __init__(self, attributeDict, commandDict={}):
         device.Device.__init__(self, attributeDict, commandDict)
+        for command in commandDict.values():
+            com = command[0]
+            if hasattr(self, com):
+                self.protocol.backend.funcCallbacks[com] = getattr(self, com)
 
 class Dev1(SimulatedDevice):
     def __init__(self, attributeDict, commandDict={}):
         SimulatedDevice.__init__(self, attributeDict, commandDict)
-        self.protocol.backend.funcCallbacks["testFunc"] = self.testFunc
 
     def testFunc(self):
         return "This is a test"
