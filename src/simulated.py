@@ -24,9 +24,6 @@ class SimulatedDevice(device.Device):
     def __init__(self, attributeDict, commandDict={}):
         device.Device.__init__(self, attributeDict, commandDict)
 
-    def testFunc(self):
-        return "Test in sim dev"
-
 class Dev1(SimulatedDevice):
     def __init__(self, attributeDict, commandDict={}):
         SimulatedDevice.__init__(self, attributeDict, commandDict)
