@@ -1,0 +1,18 @@
+# Device configuration file for Auto Device
+
+# Device Attributes
+@attributes
+name     = AutoRun
+vendor   = DevFac
+model    = Simulator
+sn       = 0002
+protocol = simulated
+timeout  = 0.05
+
+# Device Commands
+@commands
+name   | getName   | string
+vendor | getVendor | string
+model  | getModel  | string
+sn     | getSN     | string
+data   | getData{} | string

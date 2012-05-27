@@ -29,6 +29,8 @@ EXEC      = "exec"       # executable
 ROUTER    = "router"     # router
 ENV       = "env"        # environment
 DATAMAN   = "dataman"    # data manager
+AUTO      = "auto"       # auto script running device
+DEV1      = "dev1"       # test simulated device 1
 
 # User Commands
 NEW       = "new"        # create something
@@ -40,6 +42,7 @@ HELP      = "help"       # command to print helpful messages
 EXIT      = "exit"       # exits program
 KILL      = "kill"       # kills PyDAI server and exits client
 VIEW      = "view"       # switch view to specified window
+RUN       = "run"        # run a script file
 MAIN      = "main"       # main window name
 
 # Internal constants

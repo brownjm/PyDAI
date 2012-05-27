@@ -16,7 +16,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from executable import Executable
-from constants import EXIT, STATUS, NEW, DELETE, SOURCE, ERROR, QUERY, RETURN, KILL
+from constants import EXIT, STATUS, NEW, DELETE, SOURCE, ERROR, QUERY, RETURN, KILL, RUN, TYPE, SEND
 from constants import EXEC, DEVMAN
 import curses
 import traceback
@@ -273,7 +273,7 @@ class CursesPrompt(Executable):
                 if STATUS in packet.data:
                     self.addToOutput("main", str(packet[STATUS]))
 
-                if NEW in packet.data:
+                if NEW in packet.data or RUN in packet.data:
                     self.deviceWins[packet[SOURCE]] = [False, []]
                     self.addToOutput(packet[SOURCE], repr(packet[STATUS]))
 
@@ -294,6 +294,12 @@ class CursesPrompt(Executable):
                                 self.addToOutput(self.currentWin, dev)
                                 if not dev in self.deviceWins:
                                     self.deviceWins[dev] = [False, []]
+
+                if SEND in packet.data:
+                    if packet[SOURCE] == EXEC:
+                        self.addToOutput(self.currentWin, "Sending something to yourself?")
+                    elif packet[TYPE] == "string":
+                        self.addToOutput(packet[SOURCE], packet[RETURN])
                     
 
 if __name__ == '__main__':

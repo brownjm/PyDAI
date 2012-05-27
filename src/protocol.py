@@ -59,6 +59,7 @@ class Simulated(object):
     def __init__(self, attributeDict):
         self.buffer = deque()
         self.status = False
+        self.funcCallbacks = {}
 
     def open(self):
         self.status = True
@@ -78,7 +79,9 @@ class Simulated(object):
     def read(self):
         if self.isOpen():
             try:
-                return self.buffer.popleft()
+                func = self.buffer.popleft()
+                if func in self.funcCallbacks.keys():
+                    return self.funcCallbacks[func]()
             except IndexError:
                 raise EmptyBufferError(self.buffer)
                 
