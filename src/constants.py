@@ -21,6 +21,7 @@ import os.path as op
 
 # Names of files and directories
 DEVFOLDER = op.join(op.dirname(op.dirname(op.abspath(__file__))), "devices")
+SCRIPTFOLDER = op.join(op.dirname(op.dirname(op.abspath(__file__))), "scripts")
 DEVTEMPLATE = "devicetemplate"
 
 # Names of devices
