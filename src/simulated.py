@@ -19,6 +19,7 @@ import router
 import device
 from constants import SEND, DELETE, EXEC, STATUS, TIMEOUT, ERROR, ROUTER
 from constants import QUERY, NAME, MODEL, SN, RETURN, TYPE
+from constants import AUTO, DEV1
 import devicefactory
 
 class SimulatedDevice(device.Device):
@@ -39,3 +40,8 @@ class Dev1(SimulatedDevice):
 class AutoDevice(SimulatedDevice):
     def __init__(self, attributeDict, commandDict={}):
         SimulatedDevice.__init__(self, attributeDict, commandDict)
+
+
+# To add a simulated device, add a constant for the device in constants.py
+SimulatedDevices = {AUTO: AutoDevice,
+                    DEV1: Dev1}

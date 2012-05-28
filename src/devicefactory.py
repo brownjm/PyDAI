@@ -22,8 +22,7 @@ import os
 import shutil
 import device
 from constants import DEVFOLDER, DEVTEMPLATE
-from constants import AUTO, DEV1
-from simulated import AutoDevice, Dev1
+from simulated import SimulatedDevices
 
 class DeviceFactory(object):
     """Provides methods to produce Device classes from configuration files."""
@@ -85,8 +84,8 @@ specific values of their device."""
 
         # create device from newly formed dictionaries
         self.att = attributeDict
-        if filename in simDevs.keys():
-            return simDevs[filename](attributeDict, commandDict)
+        if filename in SimulatedDevices.keys():
+            return SimulatedDevices[filename](attributeDict, commandDict)
         else:
             return device.Device(attributeDict, commandDict)
 
@@ -103,9 +102,6 @@ class ConfigFileError(Exception):
         self.msg = "Malformed configuration file: {0} -> {1}".format(filename, line)
     def __str__(self):
         return self.msg
-
-simDevs = {AUTO: AutoDevice,
-           DEV1: Dev1}
 
 if __name__ == "__main__":
     df = DeviceFactory()
