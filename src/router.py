@@ -49,11 +49,7 @@ class Packet(object):
         """Swap the source and target of a packet"""
         self.source, self.target = self.target, self.source
 
-    def next(self):
-        """Return name of next destination"""
-        return self.target
-
-
+   
 class Node(multiprocessing.Process):
     """Inherit from this class and overload send method to be connected to 
 Router"""
@@ -197,7 +193,7 @@ class Router(multiprocessing.Process):
             packet.error = True
 
         if not self.procStop.is_set():
-            self.devTable[packet.next()].send(packet)
+            self.devTable[packet.target].send(packet)
 
 
 if __name__ == "__main__":
