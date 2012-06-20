@@ -42,7 +42,8 @@ class Packet(object):
         
     def __str__(self):
         """Pretty print of Packet"""
-        return "{0} -> {1}".format(self.source, self.target)
+        d = dict(self.__dict__) # make a copy so we don't destroy data
+        return "{} -> {} | {}".format(d.pop("source"), d.pop("target"), d)
 
     def reflect(self):
         """Swap the source and target of a packet"""
