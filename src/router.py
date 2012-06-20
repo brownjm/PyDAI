@@ -68,9 +68,7 @@ Router"""
 
     def connect(self, address, key):
         self.router = Client(address, authkey=key)
-        p = Packet()
-        p.addDest(self.name, ROUTER)
-        p[STATUS] = "register"
+        p = Packet(source=self.name, target=ROUTER, status="register")
         self.rt = threading.Thread(target=self.__routerThread, args=())
         self.rt.daemon = True
         self.rt.start()
@@ -78,10 +76,9 @@ Router"""
 
     def disconnect(self):
         name = self.name
-        packet = Packet()
-        packet.addDest(name, EXEC)
-        packet[DELETE] = name
-        packet[STATUS] = "Device deleted: {}".format(name)
+        packet = Packet(source=self.name, target=EXEC, 
+                        command=DELETE, data=self.name, 
+                        status="Device deleted: {}".format(name))
         self.sendToRouter(packet)
         self.router.close()
         self.router = None
@@ -101,8 +98,10 @@ Router"""
                     self.process(packet)
                 except Exception as ex:
                     # catch unexpected errors and report with packets
-                    packet[ERROR] = traceback.format_exc(ex)
-                    packet.addDest(self.name, EXEC)
+                    packet.error = True
+                    packet.status = traceback.format_exc(ex)
+                    packet.source = self.name
+                    packet.target = EXEC
                     self.sendToRouter(packet)
             else:
                 time.sleep(.01)
