@@ -109,8 +109,10 @@ Usage: new [config filename]"""
         Command.__init__(self, wordList, 1)
 
     def modPacket(self, packet):
-        packet.addDest(EXEC, DEVMAN)
-        packet[self.name] = self.args[0]
+        packet.source = EXEC
+        packet.target = DEVMAN
+        packet.command = self.name
+        packet.data = self.args[0]
 
 class Delete(Command):
     """Removes the specified device.
@@ -119,8 +121,10 @@ Usage: delete [device name]"""
         Command.__init__(self, wordList, 1)
 
     def modPacket(self, packet):
-        packet.addDest(EXEC, DEVMAN)
-        packet[self.name] = self.args[0]
+        packet.source = EXEC
+        packet.target = DEVMAN
+        packet.command = self.name
+        packet.data = self.args[0]
 
 class Send(Command):
     """Send a command to a device.
@@ -129,7 +133,8 @@ Usage: send [device command] to [device name]"""
         Command.__init__(self, wordList)
 
     def modPacket(self, packet):
-        packet[self.name] = " ".join(self.args)
+        packet.command = self.name
+        packet.data = " ".join(self.args)
 
 class To(Command):
     """Set the destination of a command.
@@ -138,7 +143,8 @@ Usage: send [device command] to [device name]"""
         Command.__init__(self, wordList, 1)
 
     def modPacket(self, packet):
-        packet.addDest(EXEC, self.args[0])
+        packet.source = EXEC
+        packet.target = self.args[0]
 
 class Query(Command):
     """Request a device's information.
@@ -148,8 +154,10 @@ Usage: query [device name]"""
 
     def modPacket(self, packet):
         dev = self.args[0]
-        packet.addDest(EXEC, dev)
-        packet[self.name] = dev
+        packet.source = EXEC
+        packet.target = dev
+        packet.command = self.name
+        packet.data = dev
 
 class Exit(Command):
     """Exit the client. Server will continue running if it was started separately.
@@ -167,8 +175,10 @@ Usage: kill"""
         Command.__init__(self, wordList, 0)
 
     def modPacket(self, packet):
-        packet.addDest(EXEC, ROUTER)
-        packet[self.name] = "all"
+        packet.source = EXEC
+        packet.target = ROUTER
+        packet.command = self.name
+        packet.data = "all"
 
 class Help(Command):
     """Provides helpful information about commands.
@@ -204,8 +214,11 @@ Usage: run [script name]"""
         Command.__init__(self, wordList, 1)
 
     def modPacket(self, packet):
-        packet.addDest(EXEC, DEVMAN)
-        packet[self.name] = self.args[0]
+        packet.source = EXEC
+        packet.target = DEVMAN
+        packet.command = self.name
+        packet.data = self.args[0]
+
 
 # dictionary of available commands
 # user defined name:  associated class
