@@ -18,7 +18,6 @@
 """Router class handles the transmission of Packets between all connected 
 Nodes"""
 
-from collections import deque
 import threading
 import Queue
 from multiprocessing.connection import Listener, Client
@@ -31,33 +30,27 @@ from constants import QUERY, STATUS, ERROR, DELETE, KILL
 
 class Packet(object):
     """Data bundle including destination information"""
-    def __init__(self):
-        self.dest = deque()
-        self.data = {}
-
+    def __init__(self, source="", target="", command="", status="", error=False,
+                 data="", returnType=""):
+        self.source = source
+        self.target = target
+        self.command = command
+        self.status = status
+        self.error = error
+        self.data = data
+        self.returnType = returnType
+        
     def __str__(self):
         """Pretty print of Packet"""
-        return "{0} | {1}".format(" -> ".join(self.dest), self.data)
+        return "{0} -> {1}".format(self.source, self.target)
 
-    def __eq__(self, other):
-        """Equivalence is same destinations and same data"""
-        return (self.dest == other.dest) and (self.data == other.data)
-
-    def __getitem__(self, key):
-        return self.data[key]
-
-    def __setitem__(self, key, val):
-        self.data[key] = val
-
-    def addDest(self, source, target):
-        """Add new destination into queue"""
-        self.data[SOURCE] = source
-        self.data[TARGET] = target
-        self.dest.append(target)
+    def reflect(self):
+        """Swap the source and target of a packet"""
+        self.source, self.target = self.target, self.source
 
     def next(self):
         """Return name of next destination"""
-        return self.dest.popleft()
+        return self.target
 
 
 class Node(multiprocessing.Process):
