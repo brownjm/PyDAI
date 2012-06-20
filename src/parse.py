@@ -19,7 +19,7 @@
 
 from collections import deque
 import router
-from constants import EXEC, DEVMAN, ROUTER, NEW, DELETE, SEND, TO, QUERY
+from constants import EXEC, DEVMAN, ROUTER, NEW, DELETE, SEND, TO, QUERY, FROM
 from constants import EXIT, KILL, HELP, VIEW, RUN
 
 class Parser(object):
@@ -159,6 +159,16 @@ Usage: query [device name]"""
         packet.command = self.name
         packet.data = dev
 
+class From(Command):
+    """Set the destination of a query command.
+Usage: query [attribute name] from [device name]"""
+    def __init__(self, wordList):
+        Command.__init__(self, wordList, 1)
+
+    def modPacket(self, packet):
+        packet.source = EXEC
+        packet.target = self.args[0]
+
 class Exit(Command):
     """Exit the client. Server will continue running if it was started separately.
 Usage: exit"""
@@ -227,6 +237,7 @@ commands = {NEW: New,
             SEND: Send,
             TO: To,
             QUERY: Query,
+            FROM: From,
             EXIT: Exit,
             KILL: Kill,
             HELP: Help,
@@ -238,6 +249,7 @@ rules = [set([New]),
          set([Delete]),
          set([Send, To]),
          set([Query]),
+         set([Query, From]),
          set([Exit]),
          set([Kill]),
          set([Help]),
