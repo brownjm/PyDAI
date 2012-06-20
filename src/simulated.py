@@ -63,11 +63,11 @@ class AutoDevice(SimulatedDevice):
         router.Node.run(self)
 
     def process(self, packet):
-        if RUN in packet.data:
+        if packet.command == RUN:
             # start execution of script
             
             # send packet back to EXEC for display purposes
-            packet.addDest(self.name, EXEC)
+            packet.reflect()
 
         device.Device.process(self, packet)
         
