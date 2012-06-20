@@ -26,7 +26,7 @@ import select
 import time
 import traceback
 from constants import ROUTER, DEVMAN, EXEC, TARGET, SOURCE
-from constants import QUERY, STATUS, ERROR, DELETE, KILL
+from constants import QUERY, STATUS, ERROR, DELETE, KILL, REGISTER
 
 class Packet(object):
     """Data bundle including destination information"""
@@ -68,7 +68,7 @@ Router"""
 
     def connect(self, address, key):
         self.router = Client(address, authkey=key)
-        p = Packet(source=self.name, target=ROUTER, status="register")
+        p = Packet(source=self.name, target=ROUTER, command=REGISTER)
         self.rt = threading.Thread(target=self.__routerThread, args=())
         self.rt.daemon = True
         self.rt.start()
@@ -170,29 +170,30 @@ class Router(multiprocessing.Process):
                                 break
 
     def __handle_packet(self, s, packet, t):
-        if KILL in packet.data:
-            packet.next()
-            packet.addDest(ROUTER, DEVMAN)
+        if packet.command == KILL:
+            packet.source = ROUTER
+            packet.target = DEVMAN
             self.procStop.set()
 
-        if QUERY in packet.data and packet.data[QUERY] == ROUTER:
-            packet.next()
-            packet.addDest(ROUTER, EXEC)
-            packet[STATUS] = str(self.devTable.keys())
-        elif STATUS in packet.data and packet[STATUS] == "register":
+        if packet.command == QUERY and packet.data == ROUTER:
+            packet.reflect()
+            packet.status = str(self.devTable.keys())
+
+        elif packet.command == REGISTER:
             #Registering a device
-            self.devTable[packet[SOURCE]] = s
+            self.devTable[packet.source] = s
             t.remove(s)
             #print "Device " + packet[SOURCE] + " registered"
                         
-        if packet.data[TARGET] == ROUTER:
+        if packet.target == ROUTER:
             return
 
         #Route to next
-        if packet.data[TARGET] not in self.devTable:
-            unknown = packet.next() #pop off unknonw target
-            packet.addDest(ROUTER, EXEC)
-            packet[ERROR] = "Target device not found: {}".format(unknown)
+        if packet.target not in self.devTable:
+            packet.target = EXEC
+            packet.source = ROUTER
+            packet.status = "Target device not found: {}".format(unknown)
+            packet.error = True
 
         if not self.procStop.is_set():
             self.devTable[packet.next()].send(packet)
