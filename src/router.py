@@ -42,17 +42,14 @@ class Packet(object):
         
     def __str__(self):
         """Pretty print of Packet"""
-        return "{0} -> {1}".format(self.source, self.target)
+        d = dict(self.__dict__) # make a copy so we don't destroy data
+        return "{} -> {} | {}".format(d.pop("source"), d.pop("target"), d)
 
     def reflect(self):
         """Swap the source and target of a packet"""
         self.source, self.target = self.target, self.source
 
-    def next(self):
-        """Return name of next destination"""
-        return self.target
-
-
+   
 class Node(multiprocessing.Process):
     """Inherit from this class and overload send method to be connected to 
 Router"""
@@ -196,7 +193,7 @@ class Router(multiprocessing.Process):
             packet.error = True
 
         if not self.procStop.is_set():
-            self.devTable[packet.next()].send(packet)
+            self.devTable[packet.target].send(packet)
 
 
 if __name__ == "__main__":
