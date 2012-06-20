@@ -39,6 +39,7 @@ DELETE    = "delete"     # delete something
 SEND      = "send"       # sends command to device
 TO        = "to"         # sets destination
 QUERY     = "query"      # request information
+FROM      = "from"       # sets destination for query
 HELP      = "help"       # command to print helpful messages
 EXIT      = "exit"       # exits program
 KILL      = "kill"       # kills PyDAI server and exits client
