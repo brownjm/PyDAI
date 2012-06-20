@@ -267,39 +267,37 @@ class CursesPrompt(Executable):
             packet = self.in_packetQueue.get()
             if DEBUG_FLAG:
                 self.addToOutput(self.currentWin, "Received: {}".format(packet))
-            if ERROR in packet.data:
-                self.addToOutput(self.currentWin, packet[ERROR])
+            if packet.error == True:
+                self.addToOutput(self.currentWin, "Error:\n{}".format(packet.status))
             else:
-                if STATUS in packet.data:
-                    self.addToOutput("main", str(packet[STATUS]))
+                self.addToOutput("main", packet.status)
 
-                if NEW in packet.data or RUN in packet.data:
-                    self.deviceWins[packet[SOURCE]] = [False, []]
-                    self.addToOutput(packet[SOURCE], repr(packet[STATUS]))
+                if packet.command == NEW or packet.command == RUN:
+                    self.deviceWins[packet.source] = [False, []]
 
-                if DELETE in packet.data:
-                    if self.currentWin == packet[SOURCE]:
+                if packet.command == DELETE:
+                    if self.currentWin == packet.source:
                         self.currentWin = "main"
-                    self.deviceWins.pop(packet[SOURCE])
+                    self.deviceWins.pop(packet.source)
 
-                if QUERY in packet.data:
-                    if packet[SOURCE] == EXEC:
+                if packet.command == QUERY:
+                    if packet.source == EXEC:
                         self.addToOutput(self.currentWin, "You want to query yourself?\nWhat does that even mean?")
-                    elif packet[SOURCE] == DEVMAN:
-                        if len(packet[RETURN]) == 0:
+                    elif packet.source == DEVMAN:
+                        if len(packet.data) == 0:
                             self.addToOutput(self.currentWin, "None")
                         else:
-                            packet[RETURN].reverse()
-                            for dev in packet[RETURN]:
+                            packet.data.reverse()
+                            for dev in packet.data:
                                 self.addToOutput(self.currentWin, dev)
                                 if not dev in self.deviceWins:
                                     self.deviceWins[dev] = [False, []]
 
-                if SEND in packet.data:
-                    if packet[SOURCE] == EXEC:
+                if packet.command == SEND:
+                    if packet.source == EXEC:
                         self.addToOutput(self.currentWin, "Sending something to yourself?")
-                    elif packet[TYPE] == "string":
-                        self.addToOutput(packet[SOURCE], packet[RETURN])
+                    elif packet.returnType == "string":
+                        self.addToOutput(packet.source, packet.data)
                     
 
 if __name__ == '__main__':

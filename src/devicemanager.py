@@ -32,60 +32,65 @@ class DeviceManager(router.Node):
         self.devFac = DeviceFactory()
 
     def process(self, packet):
-        if KILL in packet.data:
+        if packet.command == KILL:
             self.procStop.set()
 
-        if NEW in packet.data:
-            name = packet.data[NEW]
+        if packet.command == NEW:
+            name = packet.data
             if name in self.deviceList:
-                packet.addDest(DEVMAN, EXEC)
-                msg = "Device already created with the name: {0}".format(name)
-                packet[ERROR] = msg
+                packet.reflect()
+                packet.status = "Device already created with the name: {0}".format(name)
+                packet.error = True
                 
             else:
                 try:
                     self.addDevice(name, name)
-                    packet.addDest(name, EXEC)
-                    packet[STATUS] = "Device created: {0}".format(name)
+                    packet.source = name
+                    packet.target = EXEC
+                    packet.status = "Device created: {0}".format(name)
                     
                 except FileNotFoundError as ex:
-                    packet.addDest(DEVMAN, EXEC)
-                    packet[ERROR] = ex.msg
+                    packet.reflect()
+                    packet.status = ex.msg
+                    packet.error = True
                     
-        elif RUN in packet.data:
-            name = packet.data[RUN]
+        elif packet.command == RUN:
+            name = packet.data
             if name in self.deviceList:
-                packet.addDest(DEVMAN, EXEC)
-                msg = "Script {0} already running.".format(name)
-                packet[ERROR] = msg
+                packet.reflect()
+                packet.source = "Script {0} already running.".format(name)
+                packet.error = True
 
             else:
                 try:
                     self.addDevice(AUTO, name)
-                    packet.addDest(name, EXEC)
-                    packet[STATUS] = "Script running"
+                    packet.source = name
+                    packet.target = EXEC
+                    packet.status = "Script running"
 
                 except FileNotFoundError as ex:
-                    packet.addDest(DEVMAN, EXEC)
-                    packet[ERROR] = ex.msg
+                    packet.reflect()
+                    packet.status = ex.msg
+                    packet.error = True
 
-        elif DELETE in packet.data:
-            name = packet.data[DELETE]
+        elif packet.command == DELETE:
+            name = packet.data
             if not name in self.deviceList:
-                packet.addDest(DEVMAN, EXEC)
-                msg = "Device does not exist: {0}".format(name)
-                packet[ERROR] = msg
+                packet.reflect()
+                packet.status = "Device does not exist: {0}".format(name)
+                packet.error = True
             else:
                 self.removeDevice(name, packet)
                 
-        elif QUERY in packet.data:
-            packet.addDest(DEVMAN, EXEC)
-            packet[STATUS] = "Current devices connected:"
-            packet[RETURN] = self.deviceList.keys()
+        elif packet.command == QUERY:
+            packet.reflect()
+            packet.status = "Current devices connected:"
+            packet.data = self.deviceList.keys()
             
         else:
-            packet.addDest(DEVMAN, EXEC)
-            packet[ERROR] = "{} cannot do anything with packet:\n{}".format(DEVMAN, packet)
+            packet.reflect()
+            packet.status = "{} cannot do anything with packet:\n{}".format(DEVMAN, packet)
+            packet.error = True
             
         self.sendToRouter(packet)
 
