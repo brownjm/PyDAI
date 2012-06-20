@@ -18,9 +18,11 @@
 import router
 import device
 from constants import SEND, DELETE, EXEC, STATUS, TIMEOUT, ERROR, ROUTER
-from constants import QUERY, NAME, MODEL, SN, RETURN, TYPE
+from constants import QUERY, NAME, MODEL, SN, RETURN, TYPE, RUN
 from constants import AUTO, DEV1
+from constants import SCRIPTFOLDER
 import devicefactory
+import os
 
 class SimulatedDevice(device.Device):
     def __init__(self, attributeDict, commandDict={}):
@@ -41,7 +43,43 @@ class AutoDevice(SimulatedDevice):
     def __init__(self, attributeDict, commandDict={}):
         SimulatedDevice.__init__(self, attributeDict, commandDict)
 
+    def run(self):
+        fn = os.path.join(SCRIPTFOLDER, self.name)
+        try:
+            with open(fn, "r") as f:
+                data = f.readlines()
+        except IOError:
+            raise devicefactory.FileNotFoundError(fn)
+
+        # remove unnecessary lines
+        lines = []
+        for line in data:
+            if not line.startswith("#"):
+                lines.append(line.strip("\n"))
+
+        self.script = lines
+
+        # call base run method to start process
+        router.Node.run(self)
+
+    def process(self, packet):
+        if RUN in packet.data:
+            # start execution of script
+            
+            # send packet back to EXEC for display purposes
+            packet.addDest(self.name, EXEC)
+
+        device.Device.process(self, packet)
+        
 
 # To add a simulated device, add a constant for the device in constants.py
 SimulatedDevices = {AUTO: AutoDevice,
                     DEV1: Dev1}
+
+
+if __name__ == "__main__":
+    df = devicefactory.DeviceFactory()
+    a = df.constructDevice("auto")
+    a.name = "script1"
+    a.run()
+    print a.script
