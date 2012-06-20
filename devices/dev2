@@ -1,10 +1,7 @@
-# Device configuration file template
-# Please fill in the information below for your device
+# Device Configuration File
 
-# Device Attributes
-# Attributes have the following form
-# attribute = value
-@attributes
+# Attributes have the form: name = value
+[Attributes]
 name     = Device 2
 vendor   = DevFac
 model    = Simulator
@@ -12,14 +9,6 @@ sn       = 0002
 protocol = simulated
 timeout  = 0.05
 
-# Device Commands
-# Commands have the following form
-# UserDefinedName | ProtocolCommand | ReturnType
-# ProtocolCommand accepts arguments signified by {}
-# Example: waveform | WVFRM{} | string
-# Usage: waveform 1 -> WVFRM1
-@commands
-name   | getName   | string
-vendor | getVendor | string
-model  | getModel  | string
-sn     | getSN     | string
+
+# Commands have the form: alias | command | return type
+[Commands]

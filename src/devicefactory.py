@@ -57,7 +57,7 @@ specific values of their device."""
         lines = []
         for line in data:
             if not (line.startswith("#") or line.startswith("\n") or 
-                    line.startswith("@")):
+                    line.startswith("[")):
                 lines.append(line.strip("\n"))
         
         # construct the dictionaries
