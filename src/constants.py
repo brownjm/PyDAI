@@ -24,6 +24,7 @@ MAINFOLDER = op.dirname(op.dirname(op.abspath(__file__)))
 DEVFOLDER = op.join(MAINFOLDER, "devices")
 SCRIPTFOLDER = op.join(MAINFOLDER, "scripts")
 LOGFILE = op.join(MAINFOLDER, "pydai.log")
+DATAFOLDER = op.join(MAINFOLDER, "data")
 DEVTEMPLATE = "devicetemplate"
 
 # Names of devices
