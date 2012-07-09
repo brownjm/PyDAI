@@ -15,9 +15,10 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
 import Queue
 import router
-from constants import DATAMAN, EXEC, STATUS
+from constants import DATAMAN, DATAFOLDER
 
 class DataManager(router.Node):
     """Provides methods to handle data input and output"""
@@ -25,19 +26,39 @@ class DataManager(router.Node):
         router.Node.__init__(self, address, akey)
         self.name = DATAMAN
         self.outbox = Queue.Queue()
+        self.datafolder = DATAFOLDER
 
     def process(self, packet):
         # possible actions: save data, remove data entry, display entries
 
-        packet.addDest(DATAMAN, EXEC)
-        packet[STATUS] = "Didn't do anything"
+        packet.reflect()
+        packet.status = "Didn't do anything"
         self.sendToRouter(packet)
 
-    def saveData(self, data):
+
+    def listDataFiles(self, top):
+        filelist = []
+        for root, dirs, files in os.walk(top):
+            for f in files:
+                if f.endswith(".dat"):
+                    fileList.append(os.path.join(root, f))
+        return filelist
+            
+    def makeDirectory(self, dirname):
+        os.mkdir(dirname)
+
+    def copy(self):
         pass
 
-    def loadData(self, entryname):
+    def rename(self):
         pass
 
-    def displayData(self, data):
+    def delete(self):
         pass
+
+    def save(self):
+        pass
+
+
+dataFileHeader = {"title":"", "date":"", "dataType":"", "dimensions":""}
+
