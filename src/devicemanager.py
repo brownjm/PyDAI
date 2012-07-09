@@ -108,8 +108,10 @@ class DeviceManager(router.Node):
         d = self.deviceList[username][0]
         d.procStop.set()
         d.join()
-        packet.addDest(username, EXEC)
-        packet[STATUS] = "Device deleted: {}".format(username)
+        #packet.addDest(username, EXEC)
+        packet.source = username
+        packet.target = EXEC
+        packet.status = "Device deleted: {}".format(username)
         self.deviceList.pop(username)
 
 if __name__ == '__main__':
