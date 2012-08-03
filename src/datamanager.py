@@ -20,6 +20,15 @@ import Queue
 import router
 from constants import DATAMAN, DATAFOLDER
 
+
+# The whole idea with this class is to abstract away file system
+# operations into simple commands for managing data from devices.
+# DataManager will handle data in either a directory tree or some
+# other clever file/data system and allow the user to save, load, 
+# and finally export their data. Export means that they can save 
+# it to another location outside of pydai's data system, such as
+# their laptop's Documents folder.
+
 class DataManager(router.Node):
     """Provides methods to handle data input and output"""
     def __init__(self, address=('localhost', 15000), akey='12345'):
@@ -29,8 +38,7 @@ class DataManager(router.Node):
         self.datafolder = DATAFOLDER
 
     def process(self, packet):
-        # possible actions: save data, remove data entry, display entries
-
+        # do stuff with packet
         packet.reflect()
         packet.status = "Didn't do anything"
         self.sendToRouter(packet)
@@ -53,10 +61,26 @@ class DataManager(router.Node):
     def rename(self):
         pass
 
-    def delete(self):
+
+    # user commands
+    def delete(self, dataname):
+        # TODO: add command to parser
+        # DELETE <pseudo filename>
         pass
 
-    def save(self):
+    def export(self, dataname, filename):
+        # TODO: add command to parser
+        # EXPORT <pseudo filename> TO <OS full path filename>
+        pass
+
+    def open(self, dataname):
+        # TODO: add command to parser
+        # OPEN <pseudo filename>
+        pass
+
+    def save(self, dataname, filename):
+        # TODO: add command to parser
+        # SAVE <data name> AS <pseudo filename>
         pass
 
 
