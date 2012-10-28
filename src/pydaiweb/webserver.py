@@ -102,7 +102,9 @@ def WebServerMain(address, wInQueue, wOutQueue):
         server.webInQueue = wInQueue
         server.webOutQueue = wOutQueue
         
-        print 'started httpserver...'
+        print '\n\nHTTPServer Started...'
+        print ''.join(['Please open a browser and navigate to: ', str(address[0]), ':', str(address[1])])
+        print 'Press Ctrl+C to shutdown the Server'
         server.serve_forever()
     except KeyboardInterrupt:
         print '^C received, shutting down server'
