@@ -1,0 +1,171 @@
+/***************************************************************
+                  Main CSS      
+****************************************************************/
+#screen {
+	top: 52px;
+	left: 100px;
+	right: 100px;
+	bottom: 0px;
+	
+	position: absolute;
+}
+
+/***************************************************************
+                  Tabbed Browsing CSS      
+****************************************************************/
+
+#tabmenu {
+    border-bottom: 2px solid green;
+    position: absolute;
+    top: 32px;
+    right: 0px;
+    left: 0px;
+    }
+    
+.tabmenu {
+	color: #000;	
+	margin: 12px 0px 0px 0px;
+	padding: 0px;
+	z-index: 1;
+	position: relative;
+	padding-left: 10px }
+
+.tabmenu li {
+	display: inline;
+	overflow: hidden;
+	list-style-type: none; }
+
+.tabmenu li.aedit a{
+	float: right;
+}
+
+.tabmenu li.newnote a{
+	float: right;
+}
+
+.tabmenu li.edit span{
+	float: right;
+	background: red;
+	color: black;
+}
+
+.tabmenu a, a.active, li.edit span, li.newnote span {
+	color: black;
+	font: bold 1em "Trebuchet MS", Arial, sans-serif;
+	border-top: 2px solid green;
+	border-left: 2px solid green;
+	border-right: 2px solid green;
+	padding: 2px 5px 0px 5px;
+	margin: 0;
+	text-decoration: none; }
+
+.tabmenu a.active {
+	background: #ABAD85;
+	border-bottom: 3px solid black; }
+
+.tabmenu a:hover {
+	color: black;
+	background: #ADC09F; }
+
+.tabmenu a:visited {
+	color: black; }
+
+.tabmenu a.active:hover {
+	background: #ABAD85;
+	color: black; }
+	
+.content {
+    font: 0.9em/1.3em "bitstream vera sans", verdana, sans-serif;
+    text-align: justify;
+    padding: 25px;
+    border: 2px solid green;
+    border-top: none;
+    position: relative;
+    z-index: 2;
+
+    bottom: 60px;
+    top: 63px;
+    right: 0px;
+    left: 0px;
+    position: absolute;
+    font-family: courier new, monospace;
+    }
+    
+/***************************************************************
+                  Command Line CSS      
+****************************************************************/
+
+#commandLineDiv {
+    bottom: 0px;
+    left: 0px;
+	right: 0px;
+    
+    position: absolute;
+}
+
+#commandLine {
+    width: 100%;
+}
+
+/**************************************************************
+                 Drop Down Menu CSS
+**************************************************************/
+ul.ddmenu {
+  font-family: Arial, Verdana;
+  font-size: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  z-index: 98;
+}
+ul.ddmenu li {
+  display: block;
+  position: relative;
+  float: left;
+  z-index: 98;
+}
+ul.ddmenu li ul { display: none; }
+ul.ddmenu li a {
+  display: block;
+  text-decoration: none;
+  color: #ffffff;
+  border-top: 1px solid #ffffff;
+  padding: 5px 15px 5px 15px;
+  background: #2C5463;
+  margin-left: 1px;
+  white-space: nowrap;
+}
+ul.ddmenu li a:hover { background: #617F8A; }
+ul.ddmenu li:hover ul {
+  display: block;
+  position: absolute;
+}
+ul.ddmenu li:hover li {
+  float: none;
+  font-size: 11px;
+}
+ul.ddmenu li:hover a { background: #617F8A; }
+ul.ddmenu li:hover li a:hover { background: #95A9B1; }
+
+/***************************************************************
+                          Popup CSS
+***************************************************************/
+
+.overlay {
+    background-color: black;
+    position: absolute;
+    filter: alpha(opacity=60);
+    opacity: 0.6;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 99;
+}
+
+.overlay .popup {
+    background-color: white;
+    top: 50%;
+    left: 50%;
+    position: fixed;
+}

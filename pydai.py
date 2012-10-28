@@ -25,6 +25,9 @@ from src.shell import CursesPrompt
 from src.router import Router
 from src.devicemanager import DeviceManager
 from multiprocessing import Event
+from src.pydaiweb.webserver import WebServerMain
+from src.webecutable import Webecutable
+from threading import Thread
 
 def createSuite():
     loader = unittest.TestLoader()
@@ -70,6 +73,31 @@ def client(address, akey):
     cp = CursesPrompt(address, akey)
     cp.run()
 
+def web(webAddress, pydaiAddress, authkey):
+    devStop = Event()
+    routeStop = Event()
+    r = Router()
+    r.procStop = routeStop
+    r.start()
+    d = DeviceManager()
+    d.procStop = devStop
+    d.start()
+    
+    w = Webecutable(address=pydaiAddress, akey=authkey)
+    t = Thread(target=w.run, args=())
+    t.daemon=True
+    t.start()
+    
+    WebServerMain(webAddress, w.wOutQueue, w.wInQueue)
+    print "Shutting Down Device Manager..."
+    devStop.set()
+    d.join()
+    print "Done"
+    print "Shutting Down Router..."
+    routeStop.set()
+    r.join()
+    print "Done"
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--test", action="store_true", default=False,
@@ -78,6 +106,8 @@ if __name__ == "__main__":
                         help="Run PyDAI as a server")
     parser.add_argument("--client", action="store_true", default=False,
                         help="Run PyDAI as a client connecting to a PyDAI server")
+    parser.add_argument("--web", action="store_true", default=False,
+                        help="Run PyDAI as a web server")
     parser.add_argument("--ip", default='localhost',
                         help="Specifies ip to run on or connect to")
     parser.add_argument("--port", default='15000',
@@ -93,5 +123,7 @@ if __name__ == "__main__":
             server((args.ip, int(args.port)), args.authkey)
         elif args.client == True:
             client((args.ip, int(args.port)), args.authkey)
+        elif args.web == True:
+            web((args.ip, 80), (args.ip, int(args.port)), args.authkey)
         else:
             commandLine()

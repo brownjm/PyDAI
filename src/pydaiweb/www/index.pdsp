@@ -1,0 +1,39 @@
+
+<html>
+    <head>
+        <title>PyDAI</title>
+        <link rel="stylesheet" href="css/pydai.css" type="text/css" media="screen" charset="utf-8" />
+	<script type='text/javascript' src="js/jquery-1.7.2.min.js"></script>
+        <script type='text/javascript' src="js/pydai.js"></script>
+    </head>
+    <body>
+        <h2>Welcome to PyDAI</h2>
+        <div id='screen'>
+	    <div id='menuDiv'>
+	      <ul id='menu' class='ddmenu'>
+		<li><a href='javascript:void(0);'>Devices</a>
+		  <ul id='devicesub'>
+		    <li><a href='javascript:void(0);' onclick='addDeviceClick();'>Add Device...</a></li>
+		    <li><a href='javascript:void(0);'>Remove Device...</a></li>
+		  </ul>
+		</li>
+	      </ul>
+	    </div>
+            <ul id='tabmenu' class='tabmenu'>
+                <li><a href='javascript:void(0);' onclick='changeScreen("main");'>Main</a></li>
+            </ul>
+	    <div id='contentArea'>
+              <div id='main' class='content'>
+              </div>
+	    </div>
+            <div id='commandLineDiv'>
+            <ul id='commandmenu' class='tabmenu'>
+                <li><a href='javascript:void(0);' onclick='animateComLine();'>Command Line</a></li>
+            </ul>
+	    <div id='commandLineSlide'>
+            <input type='text' name='cmd' id='commandLine' />
+	    </div>
+            </div>
+        </div>
+    </body>
+</html>
