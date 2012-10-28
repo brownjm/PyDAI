@@ -58,7 +58,6 @@ function cmdLineKeyPress(event)
 {
     if(event.which == 13)
     {
-    alert($('#commandLine').serialize());
 	$.post('/cmd.pdsp',$('#commandLine').serialize(),function(data){},'json');
 	$('#commandLine').val('');
     }
