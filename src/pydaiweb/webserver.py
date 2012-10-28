@@ -90,17 +90,14 @@ class PyDAIRequestHandler(BaseHTTPRequestHandler):
             print traceback.print_exc()
 
 class PyDAIHTTPServer(HTTPServer):
-    def __init__(self, server_address, RequestHandlerClass):
+    def __init__(self, server_address, RequestHandlerClass, Queues):
         HTTPServer.__init__(self, server_address, RequestHandlerClass)
-        self.webInQueue = None
-        self.webOutQueue = None
+        self.webInQueue = Queues[0]
+        self.webOutQueue = Queues[1]
 
 def WebServerMain(address, wInQueue, wOutQueue):
     try:
-        server = PyDAIHTTPServer(address, PyDAIRequestHandler)
-        
-        server.webInQueue = wInQueue
-        server.webOutQueue = wOutQueue
+        server = PyDAIHTTPServer(address, PyDAIRequestHandler, (wInQueue, wOutQueue))
         
         print '\n\nHTTPServer Started...'
         print ''.join(['Please open a browser and navigate to: ', str(address[0]), ':', str(address[1])])
