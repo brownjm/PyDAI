@@ -7,6 +7,6 @@ class screenupdate(BasePage):
         
     def formatOutput(self):
         if not self.request['server'].webInQueue.empty():
-            return json.dumps(self.request['server'].webInQueue.get())
+            return self.request['server'].webInQueue.get()
         else:
-            return json.dumps({})
+            return json.dumps(dict())
