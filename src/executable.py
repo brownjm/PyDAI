@@ -77,7 +77,6 @@ class Executable(router.Node):
                 self.addToOutput("main", packet.status)
 
                 if packet.command == NEW or packet.command == RUN:
-                    print packet.source + ":" + packet.status
                     self.deviceWins[packet.source] = [False, []]
                     self.addToOutput(packet.source, packet.status)
 
