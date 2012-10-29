@@ -28,6 +28,7 @@ class PyDAIRequestHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         request = self.handlePath(self.path)
+        request['type'] = 'GET'
         path  = request['path']
         try:                
             if path.endswith(".html") or path.endswith('.js') or path.endswith('.css'):
@@ -65,6 +66,7 @@ class PyDAIRequestHandler(BaseHTTPRequestHandler):
         request = self.handlePath(self.path)
         path = request['path']
         request['server'] = self.server
+        request['type'] = 'POST'
         try:
             if path.endswith('.pdsp'):
                 form = cgi.FieldStorage(
