@@ -11,7 +11,7 @@ currentScr = 'main';
 
 $(function(){
     $('#commandLine').keypress(cmdLineKeyPress);
-    $.post('/cmd.pdsp',encodeURI('cmd=query devman'),function(data){},'json');
+    //$.post('/cmd.pdsp',encodeURI('cmd=query devman'),function(data){},'json');
     UpdateScreen();
 });
 
@@ -26,18 +26,20 @@ function UpdateScreen()
     $.post('/screenupdate.pdsp',
 	   '',
 	   function(data){
-	       $.each(data, function(scr, txt){
+    	   if(data.hasOwnProperty('screen')){
+	       $.each(data.screen, function(scr, contents){
 		   if($('#' + scr).length == 0)
 		   {
-		       $('#tabmenu').append('<li><a href="javascript:void(0);" onclick="changeScreen(\''+scr+'\');">' + 
+		       $('#tabmenu').append('<li><a href="javascript:void(0);" onclick="changeScreen(\''+scr+'\');" id="' + scr + '_a">' + 
 					    scr.toLowerCase().replace(/\b[a-z]/g, function(letter){ 
 						return letter.toUpperCase(); 
 					    }) + '</a></li>');
 		       $('#contentArea').append('<div id="' + scr + '" class="content"></div>');
 		       $('#' + scr).css("display", "none");
 		   }
-		   $('#' + scr).append(txt + '<br/>');
+		   $('#' + scr).append(contents[1] + '<br/>');
 	       });
+	       }
 	       setTimeout('UpdateScreen()', 1000);
 	   },
 	   'json')
@@ -48,9 +50,15 @@ function changeScreen(scr)
 {
     if(scr != currentScr)
     {
-	$('#' + currentScr).css("display", "none");
-	$('#' + scr).css("display", "inline");
-	currentScr = scr;
+    $.post('/screenupdate.pdsp', 'window=' + scr, 
+    function(data) {
+    	$('#' + currentScr).css("display", "none");
+	    $('#' + currentScr + '_a').removeClass("active");
+    	$('#' + scr).css("display", "inline");
+	    $('#' + scr + '_a').addClass("active");
+	    currentScr = scr;
+	    alert(currentScr);
+	    }, 'json');
     }
 }
 

@@ -52,8 +52,6 @@ class CursesPrompt(Executable):
         self.screen.keypad(1)
         self.screen.nodelay(1)
         self.screen.timeout(50)
-        self.deviceWins = {"main": [False, []]}
-        self.currentWin = "main"
         self.topLine = 0
 
     def __main_loop(self, prompt_string):
@@ -93,7 +91,7 @@ class CursesPrompt(Executable):
                 except ValueError as ex:
                     self.addToOutput(self.currentWin, "Key entry error.")
             self.__update_screen(input.tostring())
-            self.__handle_packets()
+            self.handle_packets()
             curses.doupdate()
 
         return input.tostring()
@@ -260,45 +258,7 @@ class CursesPrompt(Executable):
             curses.doupdate()
             i = self.screen.getch(self.yx[0]-2, 0)
 
-        curses.endwin()
-
-    def __handle_packets(self):
-        if not self.in_packetQueue.empty():
-            packet = self.in_packetQueue.get()
-            if DEBUG_FLAG:
-                self.addToOutput(self.currentWin, "Received: {}".format(packet))
-            if packet.error == True:
-                self.addToOutput(self.currentWin, "Error:\n{}".format(packet.status))
-            else:
-                self.addToOutput("main", packet.status)
-
-                if packet.command == NEW or packet.command == RUN:
-                    self.deviceWins[packet.source] = [False, []]
-
-                if packet.command == DELETE:
-                    if self.currentWin == packet.source:
-                        self.currentWin = "main"
-                    self.deviceWins.pop(packet.source)
-
-                if packet.command == QUERY:
-                    if packet.source == EXEC:
-                        self.addToOutput(self.currentWin, "You want to query yourself?\nWhat does that even mean?")
-                    elif packet.source == DEVMAN:
-                        if len(packet.data) == 0:
-                            self.addToOutput(self.currentWin, "None")
-                        else:
-                            packet.data.reverse()
-                            for dev in packet.data:
-                                self.addToOutput(self.currentWin, dev)
-                                if not dev in self.deviceWins:
-                                    self.deviceWins[dev] = [False, []]
-
-                if packet.command == SEND:
-                    if packet.source == EXEC:
-                        self.addToOutput(self.currentWin, "Sending something to yourself?")
-                    elif packet.returnType == "string":
-                        self.addToOutput(packet.source, packet.data)
-                    
+        curses.endwin()          
 
 if __name__ == '__main__':
     try:
