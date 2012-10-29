@@ -22,7 +22,10 @@ import router
 import devicemanager
 import parse
 import env
-from constants import EXIT, EXEC, DEVMAN, ENV, HELP
+from constants import EXIT, STATUS, NEW, DELETE, SOURCE, ERROR, QUERY, RETURN, KILL, RUN, TYPE, SEND
+from constants import EXEC, DEVMAN, ENV, HELP
+
+DEBUG_FLAG = True
 
 class Executable(router.Node):
     def __init__(self, address, akey):
@@ -38,6 +41,8 @@ class Executable(router.Node):
 
         self.name = EXEC
         self.connect(self.address, self.akey)
+        self.deviceWins = {"main": [False, []]}
+        self.currentWin = "main"
 
     def send(self, packet):
         raise Exception("Required to override")
@@ -57,6 +62,49 @@ class Executable(router.Node):
     def _exit(self, *args):
         self.disconnect()
         return "Goodbye!!"
+        
+    def addToOutput(self, win, outstr):
+        raise AttributeError("Must overload process method")
+        
+    def handle_packets(self):
+        if not self.in_packetQueue.empty():
+            packet = self.in_packetQueue.get()
+            if DEBUG_FLAG:
+                self.addToOutput(self.currentWin, "Received: {}".format(packet))
+            if packet.error == True:
+                self.addToOutput(self.currentWin, "Error:\n{}".format(packet.status))
+            else:
+                self.addToOutput("main", packet.status)
+
+                if packet.command == NEW or packet.command == RUN:
+                    print packet.source + ":" + packet.status
+                    self.deviceWins[packet.source] = [False, []]
+                    self.addToOutput(packet.source, packet.status)
+
+                if packet.command == DELETE:
+                    if self.currentWin == packet.source:
+                        self.currentWin = "main"
+                    self.deviceWins.pop(packet.source)
+
+                if packet.command == QUERY:
+                    if packet.source == EXEC:
+                        self.addToOutput(self.currentWin, "You want to query yourself?\nWhat does that even mean?")
+                    elif packet.source == DEVMAN:
+                        if len(packet.data) == 0:
+                            self.addToOutput(self.currentWin, "None")
+                        else:
+                            packet.data.reverse()
+                            for dev in packet.data:
+                                self.addToOutput(self.currentWin, dev)
+                                if not dev in self.deviceWins:
+                                    self.deviceWins[dev] = [False, []]
+
+                if packet.command == SEND:
+                    if packet.source == EXEC:
+                        self.addToOutput(self.currentWin, "Sending something to yourself?")
+                    elif packet.returnType == "string":
+                        self.addToOutput(packet.source, packet.data)
+
 
 
 class Helper(object):
