@@ -61,9 +61,13 @@ class Webecutable(Executable):
             if self.wInQueue.qsize() > 0:
                 try:
                     line = str(self.wInQueue.get())
-                    commandList = self.parser.parse(line)
-                    packet = self.parser.package(commandList)
-                    self.sendToRouter(packet)
+                    
+                    if line.startswith('window='):
+                        self.currentWin = line.split('=')[1]
+                    else:
+                        commandList = self.parser.parse(line)
+                        packet = self.parser.package(commandList)
+                        self.sendToRouter(packet)
                 except EOFError:
                     #Do something here probably
                     pass
