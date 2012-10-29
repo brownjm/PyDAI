@@ -23,7 +23,7 @@ from constants import RETURN, KILL, RUN, TYPE, SEND, DEVMAN, EXEC
 from executable import Executable
 import router
 import devicemanager
-import time
+import time, json
 from multiprocessing import Queue
 
 class Webecutable(Executable):
@@ -32,11 +32,30 @@ class Webecutable(Executable):
         self.name = EXEC
         self.wInQueue = wInQueue
         self.wOutQueue = wOutQueue
-        self.wOutQueue.put({'main' : self.formatOutput(self.getWelcome())})
+        self.needToUpdate = False
+        self.addToOutput('main', self.getWelcome())
+        update = {'screen': self.deviceWins}
+        self.wOutQueue.put(json.dumps(update))
+        self.cleanupWins()
 
     def formatOutput(self, string):
         return string.replace('\n', '<br/>')
 
+    def addToOutput(self, win, outstr):
+        if outstr == None or outstr == '':
+            return
+
+        self.deviceWins[win][1].extend([self.formatOutput(outstr)])
+        
+        if not win == self.currentWin:
+            self.deviceWins[win][0] = True
+            
+        self.needToUpdate = True
+    
+    def cleanupWins(self):
+        for win in self.deviceWins.keys():
+            self.deviceWins[win][1] = []
+                
     def run(self):
         while not self.procStop.is_set():
             if self.wInQueue.qsize() > 0:
@@ -49,21 +68,13 @@ class Webecutable(Executable):
                     #Do something here probably
                     pass
 
-            if not self.in_packetQueue.empty():
-                packet = self.in_packetQueue.get()
-                if packet.command == QUERY:
-                    returnStr = packet.status + '<br/>'
-                    if packet.source == DEVMAN:
-                        if len(packet.data) == 0:
-                            returnStr = returnStr + "None"
-                        else:
-                            returnStr = returnStr + '<br/>'.join(packet.data)
-                        self.wOutQueue.put({'main': self.formatOutput(returnStr)})
-
-                if packet.command == NEW:
-                    self.wOutQueue.put({packet.source : self.formatOutput(packet.status)})
-                    self.wOutQueue.put({'main' : self.formatOutput(packet.status)})
-
+            self.handle_packets()
+            if self.needToUpdate:
+                update = {"screen": self.deviceWins}
+                self.wOutQueue.put(json.dumps(update))
+                self.cleanupWins()
+                self.needToUpdate = False
+            
             time.sleep(.01)
 
 if __name__ == '__main__':
