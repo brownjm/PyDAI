@@ -11,7 +11,7 @@ currentScr = 'main';
 
 $(function(){
     $('#commandLine').keypress(cmdLineKeyPress);
-    $.post('/cmd.pdsp',encodeURI('cmd=query devman'),function(data){},'json');
+    //$.post('/cmd.pdsp',encodeURI('cmd=query devman'),function(data){},'json');
     UpdateScreen();
 });
 
@@ -26,7 +26,8 @@ function UpdateScreen()
     $.post('/screenupdate.pdsp',
 	   '',
 	   function(data){
-	       $.each(data, function(scr, txt){
+    	   if(data.hasOwnProperty('screen')){
+	       $.each(data.screen, function(scr, contents){
 		   if($('#' + scr).length == 0)
 		   {
 		       $('#tabmenu').append('<li><a href="javascript:void(0);" onclick="changeScreen(\''+scr+'\');" id="' + scr + '_a">' + 
@@ -36,8 +37,9 @@ function UpdateScreen()
 		       $('#contentArea').append('<div id="' + scr + '" class="content"></div>');
 		       $('#' + scr).css("display", "none");
 		   }
-		   $('#' + scr).append(txt + '<br/>');
+		   $('#' + scr).append(contents[1] + '<br/>');
 	       });
+	       }
 	       setTimeout('UpdateScreen()', 1000);
 	   },
 	   'json')
