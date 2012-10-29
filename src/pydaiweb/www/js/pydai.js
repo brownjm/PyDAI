@@ -50,11 +50,15 @@ function changeScreen(scr)
 {
     if(scr != currentScr)
     {
-	$('#' + currentScr).css("display", "none");
-	$('#' + currentScr + '_a').removeClass("active");
-	$('#' + scr).css("display", "inline");
-	$('#' + scr + '_a').addClass("active");
-	currentScr = scr;
+    $.post('/screenupdate.pdsp', 'window=' + scr, 
+    function(data) {
+    	$('#' + currentScr).css("display", "none");
+	    $('#' + currentScr + '_a').removeClass("active");
+    	$('#' + scr).css("display", "inline");
+	    $('#' + scr + '_a').addClass("active");
+	    currentScr = scr;
+	    alert(currentScr);
+	    }, 'json');
     }
 }
 
