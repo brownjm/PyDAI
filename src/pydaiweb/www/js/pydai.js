@@ -29,7 +29,7 @@ function UpdateScreen()
 	       $.each(data, function(scr, txt){
 		   if($('#' + scr).length == 0)
 		   {
-		       $('#tabmenu').append('<li><a href="javascript:void(0);" onclick="changeScreen(\''+scr+'\');">' + 
+		       $('#tabmenu').append('<li><a href="javascript:void(0);" onclick="changeScreen(\''+scr+'\');" id="' + scr + '_a">' + 
 					    scr.toLowerCase().replace(/\b[a-z]/g, function(letter){ 
 						return letter.toUpperCase(); 
 					    }) + '</a></li>');
@@ -49,7 +49,9 @@ function changeScreen(scr)
     if(scr != currentScr)
     {
 	$('#' + currentScr).css("display", "none");
+	$('#' + currentScr + '_a').removeClass("active");
 	$('#' + scr).css("display", "inline");
+	$('#' + scr + '_a').addClass("active");
 	currentScr = scr;
     }
 }

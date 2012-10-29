@@ -60,8 +60,8 @@
 	text-decoration: none; }
 
 .tabmenu a.active {
-	background: #ABAD85;
-	border-bottom: 3px solid black; }
+	background: white;
+	border-bottom: 3px solid white; }
 
 .tabmenu a:hover {
 	color: black;

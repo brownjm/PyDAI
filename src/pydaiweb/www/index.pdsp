@@ -20,7 +20,7 @@
 	      </ul>
 	    </div>
             <ul id='tabmenu' class='tabmenu'>
-                <li><a href='javascript:void(0);' onclick='changeScreen("main");'>Main</a></li>
+                <li><a href='javascript:void(0);' class='active' id='main_a' onclick='changeScreen("main");'>Main</a></li>
             </ul>
 	    <div id='contentArea'>
               <div id='main' class='content'>
