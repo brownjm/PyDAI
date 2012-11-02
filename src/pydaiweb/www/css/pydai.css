@@ -82,6 +82,7 @@
     border-top: none;
     position: relative;
     z-index: 2;
+    overflow: auto;
 
     bottom: 60px;
     top: 63px;
