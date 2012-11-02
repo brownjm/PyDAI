@@ -51,13 +51,11 @@ class Executable(router.Node):
         print self.getWelcome()
 
     def getWelcome(self):
-        return """
-#    PyDAI
+        return """#    PyDAI
 #
 #    Copyright (C) 2011 Jeffrey M Brown, Greg A Cohoon, Kyle T Taylor
 #
-#    Type 'exit' to quit.
-"""
+#    Type 'exit' to quit."""
 
     def _exit(self, *args):
         self.disconnect()
@@ -69,16 +67,31 @@ class Executable(router.Node):
     def handle_packets(self):
         if not self.in_packetQueue.empty():
             packet = self.in_packetQueue.get()
+            output = ''
             if DEBUG_FLAG:
-                self.addToOutput(self.currentWin, "Received: {}".format(packet))
+                output = "Received: {}\n".format(packet)
+                #self.addToOutput(self.currentWin, "Received: {}".format(packet))
+                #if not self.currentWin == "main":
+                #    self.addToOutput("main", \
+                #    "Received: {}".format(packet))
+                    
             if packet.error == True:
-                self.addToOutput(self.currentWin, "Error:\n{}".format(packet.status))
+                output = ''.join([output, \
+                "Error:\n{}".format(packet.status)])
+                #self.addToOutput(self.currentWin, "Error:\n{}".format(packet.status))
+                #if not self.currentWin == "main":
+                #    self.addToOutput("main", \
+                #    "Error:\n{}".format(packet.status))
+                    
             else:
-                self.addToOutput("main", packet.status)
+                output = ''.join([output, packet.status])
+                #self.addToOutput("main", packet.status)
+                #if packet.source in self.deviceWins:
+                #    self.addToOutput(packet.source, packet.status)
 
                 if packet.command == NEW or packet.command == RUN:
                     self.deviceWins[packet.source] = [False, []]
-                    self.addToOutput(packet.source, packet.status)
+                    #self.addToOutput(packet.source, packet.status)
 
                 if packet.command == DELETE:
                     if self.currentWin == packet.source:
@@ -87,24 +100,38 @@ class Executable(router.Node):
 
                 if packet.command == QUERY:
                     if packet.source == EXEC:
-                        self.addToOutput(self.currentWin, "You want to query yourself?\nWhat does that even mean?")
+                        output = ''.join([output, \
+                        "You want to query yourself?\nWhat does \
+                         that even mean?"])
                     elif packet.source == DEVMAN:
                         if len(packet.data) == 0:
-                            self.addToOutput(self.currentWin, "None")
+                            output = ''.join([output, "None"])
+                            #self.addToOutput(self.currentWin, "None")
                         else:
                             packet.data.reverse()
+                            output = ''.join([output, \
+                            ''.join(packet.data)])
                             for dev in packet.data:
-                                self.addToOutput(self.currentWin, dev)
+                                #self.addToOutput(self.currentWin, dev)
                                 if not dev in self.deviceWins:
                                     self.deviceWins[dev] = [False, []]
 
                 if packet.command == SEND:
                     if packet.source == EXEC:
-                        self.addToOutput(self.currentWin, "Sending something to yourself?")
+                        #self.addToOutput(self.currentWin, \
+                        output = ''.join([output, \
+                        "Sending something to yourself?"])
                     elif packet.returnType == "string":
-                        self.addToOutput(packet.source, packet.data)
-
-
+                        output = ''.join([output, packet.data])
+                        #self.addToOutput(packet.source, packet.data)
+                
+                self.addToOutput("main", output)
+                if self.currentWin != "main":
+                    self.addToOutput(self.currentWin, output)
+                    
+                if self.currentWin != packet.source and \
+                packet.source in self.deviceWins:
+                    self.addToOutput(packet.source, output)
 
 class Helper(object):
     """Gives user access to command docstrings within PyDAI."""

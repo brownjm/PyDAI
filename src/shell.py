@@ -162,6 +162,7 @@ class CursesPrompt(Executable):
             return
 
         # wrap text to fit window
+        outstr = ''.join(["\n", outstr])
         outstr = wrap(outstr, self.yx[1]-4)
 
         winLen = len(self.deviceWins[win][1])
@@ -230,7 +231,7 @@ class CursesPrompt(Executable):
             try:
                 line = self.__main_loop(">")
                 self.env.addToHistory(line)
-                self.addToOutput(self.currentWin, ''.join(["\n>>> ", line]))
+                self.addToOutput(self.currentWin, ''.join([">>> ", line]))
 
                 if not line.strip() == '': # if line has chars other than whitespace
                     commandList = self.parser.parse(line)
@@ -246,7 +247,7 @@ class CursesPrompt(Executable):
                             self.addToOutput(self.currentWin, "Sent: {}".format(packet))
                         self.sendToRouter(packet)
             except Exception as ex:
-                self.addToOutput(self.currentWin, "Error Occured:\n")
+                self.addToOutput(self.currentWin, "Error Occured:")
                 self.addToOutput(self.currentWin, traceback.format_exc())
                 line = ''
         
