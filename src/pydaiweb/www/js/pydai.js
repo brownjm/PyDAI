@@ -11,7 +11,7 @@ currentScr = 'main';
 
 $(function(){
     $('#commandLine').keypress(cmdLineKeyPress);
-    //$.post('/cmd.pdsp',encodeURI('cmd=query devman'),function(data){},'json');
+    $.post('/cmd.pdsp',encodeURI('cmd=query devman'),function(data){},'json');
     UpdateScreen();
 });
 
@@ -57,7 +57,6 @@ function changeScreen(scr)
     	$('#' + scr).css("display", "inline");
 	    $('#' + scr + '_a').addClass("active");
 	    currentScr = scr;
-	    alert(currentScr);
 	    }, 'json');
     }
 }
@@ -66,8 +65,9 @@ function cmdLineKeyPress(event)
 {
     if(event.which == 13)
     {
-	$.post('/cmd.pdsp',$('#commandLine').serialize(),function(data){},'json');
-	$('#commandLine').val('');
+        $('#' + currentScr).append('<br/>>>> ' + $('#commandLine').val() + '<br/><br/>')
+    	$.post('/cmd.pdsp',$('#commandLine').serialize(),function(data){},'json');
+	    $('#commandLine').val('');
     }
 }
 

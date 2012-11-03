@@ -124,6 +124,6 @@ if __name__ == "__main__":
         elif args.client == True:
             client((args.ip, int(args.port)), args.authkey)
         elif args.web == True:
-            web((args.ip, 80), (args.ip, int(args.port)), args.authkey)
+            web((args.ip, 8000), (args.ip, int(args.port)), args.authkey)
         else:
             commandLine()
