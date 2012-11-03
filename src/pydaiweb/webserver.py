@@ -22,12 +22,13 @@ class PyDAIRequestHandler(BaseHTTPRequestHandler):
             path = ''.join([curdir, sep, "src/pydaiweb/www", path])
             
         query['path'] = path
-        
+
         return query
 
 
     def do_GET(self):
         request = self.handlePath(self.path)
+        request['server'] = self.server
         request['type'] = 'GET'
         path  = request['path']
         try:                
