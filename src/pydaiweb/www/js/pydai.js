@@ -35,7 +35,8 @@ function UpdateScreen()
 	       $.each(data.screen, function(scr, contents){
 		   if($('#' + scr).length == 0)
 		   {
-		       $('#tabmenu').append('<li><a href="javascript:void(0);" onclick="changeScreen(\''+scr+'\');" id="' + scr + '_a">' + 
+		       $('#tabmenu').append('<li id="' + scr + '_li" >'+
+		       '<a class="device" href="javascript:void(0);" onclick="changeScreen(\''+scr+'\');" id="' + scr + '_a">' + 
 					    scr.toLowerCase().replace(/\b[a-z]/g, function(letter){ 
 						return letter.toUpperCase(); 
 					    }) + '</a></li>');
@@ -82,38 +83,32 @@ function cmdLineKeyPress(event)
 
 function addDeviceClick()
 {
-    var optionHTML = '';
+    var content = 'Device: <select id="deviceSelect">';
     $.each(availableDevs, function(i, dev){
-        optionHTML = optionHTML + '<option value="' + dev + '">' + dev + '</option>';
+        content = content + '<option value="' + dev + '">' + dev + '</option>';
     });
-    var overlayHTML = '<div id="popup_total"><div id="overlay" class="overlay"></div><div id="popup" class="popup">' +
-                      '<div id="popup_title" class="popup_title">Add Device...</div><div id="popup_content" class="popup_content">' + 
-                      'Device: <select id="deviceSelect">' + optionHTML + '</select>' + 
-                      '<br/><br/>Device Name: <input type="text" id="deviceName" value="Not Implemented Yet"/>' +
-                      '<br/><br/><div id="popup_buttons"><input type="submit" value="Ok" onclick="okPopupClick();" />' +
-                      ' <input type="submit" value="Cancel" onclick="closePopup();" /></div>' +
-                      '</div></div></div>';
+    content = content + '</select><br/><br/>Device Name: <input type="text" id="deviceName" value="Not Implemented Yet"/>'
 
-    $('body').append(overlayHTML);
-    
-    left = $('#popup').width() / 2;
-    ptop = $('#popup').height() / 2;
-    
-    alert('' + left + ':' + ptop);
-    
-    $('#popup').css({
-        'margin-left': '-' + left + 'px',
-        'margin-top': '-' + ptop + 'px'
-    });
-    
-    $('#popup_total').css({ 'visibility': 'visible', 'display': 'none' });
-    
-    $('#popup_total').fadeIn('fast');
+     var popup = new Popup("Add Device...", content, okPopupClick);
+     popup.Show();
 }
 
-function closePopup()
+function removeDeviceClick()
 {
-    $('#popup_total').fadeOut('fast', function(){ $('#popup_total').remove(); });
+    var content = '';
+    
+    if($('.device').length == 0)
+    {
+        content = 'No devices currently connected...';
+    }else{
+        content = 'Device: <select id="deviceSelect">';
+        $('.device').each(function(i, dev){
+            content = content + '<option value="' + $(dev).text().toLowerCase() + '">' + $(dev).text() + '</option>';
+        });
+        content = content + '</select>';
+    }
+    var popup = new Popup("Remove Device...", content, okRemovePopupClick);
+    popup.Show();
 }
 
 function okPopupClick()
@@ -127,4 +122,56 @@ function okPopupClick()
     */
     $.post('/cmd.pdsp',encodeURI('cmd=new ' + $('#deviceSelect').val() /*+ ' as ' + $('#deviceName').val()*/),function(data){},'json');
     closePopup();
+}
+
+function okRemovePopupClick()
+{
+    if($('#deviceSelect').length > 0){
+        winToDel = $('#deviceSelect').val();
+        if(currentScr == winToDel)
+        {
+            changeScreen('main');
+        }
+        $('#' + winToDel + '_li').remove();
+        $('#' + winToDel).remove();
+        $.post('/cmd.pdsp',encodeURI('cmd=delete ' + $('#deviceSelect').val()),function(data){},'json');
+    }
+    closePopup();
+}
+
+/*****************************************************************
+                          Popup Code
+*****************************************************************/
+
+function Popup(title, content, okFunction)
+{
+    this.HTML = '<div id="popup_total"><div id="overlay" class="overlay"></div><div id="popup" class="popup">' +
+                  '<div id="popup_title" class="popup_title">' + title + '</div><div id="popup_content" class="popup_content">' + 
+                  content +
+                  '<br/><br/><div id="popup_buttons"><input id="okPopupButton" type="submit" value="Ok" />' +
+                  ' <input type="submit" value="Cancel" onclick="closePopup();" /></div>' +
+                  '</div></div></div>';
+    
+    this.Show = function() {
+        $('body').append(this.HTML);
+        
+        $('#okPopupButton').bind('click', okFunction);
+        
+        var left = $('#popup').width() / 2;
+        var ptop = $('#popup').height() / 2;
+        
+        $('#popup').css({
+            'margin-left': '-' + left + 'px',
+            'margin-top': '-' + ptop + 'px'
+        });
+        
+        $('#popup_total').css({ 'visibility': 'visible', 'display': 'none' });
+        
+        $('#popup_total').fadeIn('fast');
+    }
+}
+
+function closePopup()
+{
+    $('#popup_total').fadeOut('fast', function(){ $('#popup_total').remove(); });
 }
