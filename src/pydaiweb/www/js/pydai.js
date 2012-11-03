@@ -35,7 +35,8 @@ function UpdateScreen()
 	       $.each(data.screen, function(scr, contents){
 		   if($('#' + scr).length == 0)
 		   {
-		       $('#tabmenu').append('<li><a href="javascript:void(0);" onclick="changeScreen(\''+scr+'\');" id="' + scr + '_a">' + 
+		       $('#tabmenu').append('<li id="' + scr + '_li" >'+
+		       '<a class="device" href="javascript:void(0);" onclick="changeScreen(\''+scr+'\');" id="' + scr + '_a">' + 
 					    scr.toLowerCase().replace(/\b[a-z]/g, function(letter){ 
 						return letter.toUpperCase(); 
 					    }) + '</a></li>');
@@ -92,6 +93,24 @@ function addDeviceClick()
      popup.Show();
 }
 
+function removeDeviceClick()
+{
+    var content = '';
+    
+    if($('.device').length == 0)
+    {
+        content = 'No devices currently connected...';
+    }else{
+        content = 'Device: <select id="deviceSelect">';
+        $('.device').each(function(i, dev){
+            content = content + '<option value="' + $(dev).text().toLowerCase() + '">' + $(dev).text() + '</option>';
+        });
+        content = content + '</select>';
+    }
+    var popup = new Popup("Remove Device...", content, okRemovePopupClick);
+    popup.Show();
+}
+
 function okPopupClick()
 {
     /*
@@ -102,6 +121,21 @@ function okPopupClick()
     }
     */
     $.post('/cmd.pdsp',encodeURI('cmd=new ' + $('#deviceSelect').val() /*+ ' as ' + $('#deviceName').val()*/),function(data){},'json');
+    closePopup();
+}
+
+function okRemovePopupClick()
+{
+    if($('#deviceSelect').length > 0){
+        winToDel = $('#deviceSelect').val();
+        if(currentScr == winToDel)
+        {
+            changeScreen('main');
+        }
+        $('#' + winToDel + '_li').remove();
+        $('#' + winToDel).remove();
+        $.post('/cmd.pdsp',encodeURI('cmd=delete ' + $('#deviceSelect').val()),function(data){},'json');
+    }
     closePopup();
 }
 
