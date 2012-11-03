@@ -1,5 +1,6 @@
 from src.pydaiweb.bin.basepage import BasePage
-import json
+from src.constants import DEVFOLDER
+import json, os
 
 class screenupdate(BasePage):
     def process(self):
@@ -13,6 +14,11 @@ class screenupdate(BasePage):
         return dict(text=self.formatOutput())
         
     def formatOutput(self):
+        if 'availableDevs' in self.request and \
+        self.request['availableDevs'][0] == 'true':
+            devs = os.listdir(DEVFOLDER)
+            return json.dumps(dict(availableDevs=devs))
+            
         if not self.request['server'].webInQueue.empty():
             return self.request['server'].webInQueue.get()
         else:
