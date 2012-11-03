@@ -70,28 +70,16 @@ class Executable(router.Node):
             output = ''
             if DEBUG_FLAG:
                 output = "Received: {}\n".format(packet)
-                #self.addToOutput(self.currentWin, "Received: {}".format(packet))
-                #if not self.currentWin == "main":
-                #    self.addToOutput("main", \
-                #    "Received: {}".format(packet))
                     
             if packet.error == True:
                 output = ''.join([output, \
                 "Error:\n{}".format(packet.status)])
-                #self.addToOutput(self.currentWin, "Error:\n{}".format(packet.status))
-                #if not self.currentWin == "main":
-                #    self.addToOutput("main", \
-                #    "Error:\n{}".format(packet.status))
                     
             else:
                 output = ''.join([output, packet.status])
-                #self.addToOutput("main", packet.status)
-                #if packet.source in self.deviceWins:
-                #    self.addToOutput(packet.source, packet.status)
 
                 if packet.command == NEW or packet.command == RUN:
                     self.deviceWins[packet.source] = [False, []]
-                    #self.addToOutput(packet.source, packet.status)
 
                 if packet.command == DELETE:
                     if self.currentWin == packet.source:
@@ -106,24 +94,20 @@ class Executable(router.Node):
                     elif packet.source == DEVMAN:
                         if len(packet.data) == 0:
                             output = ''.join([output, "None"])
-                            #self.addToOutput(self.currentWin, "None")
                         else:
                             packet.data.reverse()
                             output = ''.join([output, \
                             ''.join(packet.data)])
                             for dev in packet.data:
-                                #self.addToOutput(self.currentWin, dev)
                                 if not dev in self.deviceWins:
                                     self.deviceWins[dev] = [False, []]
 
                 if packet.command == SEND:
                     if packet.source == EXEC:
-                        #self.addToOutput(self.currentWin, \
                         output = ''.join([output, \
                         "Sending something to yourself?"])
                     elif packet.returnType == "string":
                         output = ''.join([output, packet.data])
-                        #self.addToOutput(packet.source, packet.data)
                 
                 self.addToOutput("main", output)
                 if self.currentWin != "main":
