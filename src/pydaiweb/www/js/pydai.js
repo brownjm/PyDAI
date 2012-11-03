@@ -4,6 +4,7 @@
 
 commandLineVisible = true;
 currentScr = 'main';
+availableDevs = [];
 
 /*************************************************************
                      Code
@@ -11,6 +12,10 @@ currentScr = 'main';
 
 $(function(){
     $('#commandLine').keypress(cmdLineKeyPress);
+    $.get('/screenupdate.pdsp?availableDevs=true', 
+        function(data){
+            availableDevs = data.availableDevs;
+        }, 'json');
     $.post('/cmd.pdsp',encodeURI('cmd=query devman'),function(data){},'json');
     UpdateScreen();
 });
@@ -77,11 +82,49 @@ function cmdLineKeyPress(event)
 
 function addDeviceClick()
 {
-    var overlayHTML = '<div id="overlay" class="overlay"><div id="popup" class="popup">' + 
-                      'Device: <select id="deviceSelect"><option value="Device 1">Device 1</option></select>' + 
-                      '<br/><br/>Device Name: <input type="text" id="deviceName"/>' +
-                      '</div></div>';
+    var optionHTML = '';
+    $.each(availableDevs, function(i, dev){
+        optionHTML = optionHTML + '<option value="' + dev + '">' + dev + '</option>';
+    });
+    var overlayHTML = '<div id="popup_total"><div id="overlay" class="overlay"></div><div id="popup" class="popup">' +
+                      '<div id="popup_title" class="popup_title">Add Device...</div><div id="popup_content" class="popup_content">' + 
+                      'Device: <select id="deviceSelect">' + optionHTML + '</select>' + 
+                      '<br/><br/>Device Name: <input type="text" id="deviceName" value="Not Implemented Yet"/>' +
+                      '<br/><br/><div id="popup_buttons"><input type="submit" value="Ok" onclick="okPopupClick();" />' +
+                      ' <input type="submit" value="Cancel" onclick="closePopup();" /></div>' +
+                      '</div></div></div>';
 
     $('body').append(overlayHTML);
-    $('#overlay').fadeIn('fast');
+    
+    left = $('#popup').width() / 2;
+    ptop = $('#popup').height() / 2;
+    
+    alert('' + left + ':' + ptop);
+    
+    $('#popup').css({
+        'margin-left': '-' + left + 'px',
+        'margin-top': '-' + ptop + 'px'
+    });
+    
+    $('#popup_total').css({ 'visibility': 'visible', 'display': 'none' });
+    
+    $('#popup_total').fadeIn('fast');
+}
+
+function closePopup()
+{
+    $('#popup_total').fadeOut('fast', function(){ $('#popup_total').remove(); });
+}
+
+function okPopupClick()
+{
+    /*
+    if($('#deviceName').val() == '')
+    {
+        alert('"Device Name" needs a value.');
+        return;
+    }
+    */
+    $.post('/cmd.pdsp',encodeURI('cmd=new ' + $('#deviceSelect').val() /*+ ' as ' + $('#deviceName').val()*/),function(data){},'json');
+    closePopup();
 }

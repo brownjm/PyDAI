@@ -164,9 +164,40 @@ ul.ddmenu li:hover li a:hover { background: #95A9B1; }
     z-index: 99;
 }
 
-.overlay .popup {
-    background-color: white;
+.popup {
     top: 50%;
     left: 50%;
     position: fixed;
+    z-index: 100;
+    border: solid 5px #999;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+	overflow: auto;
+}
+
+#popup_total {
+	visibility: hidden;
+	display: block;
+}
+
+.popup_content {
+    background-color: white;
+    padding: 10px;
+}
+
+#popup_buttons {
+    width: 100%;
+    align: center;
+    text-align: center;
+}
+
+.popup_title
+{
+	background: #CCC url(/images/title.gif) top repeat-x;
+	/*border: solid 1px #FFF;*/
+	border-bottom: solid 1px #999;
+	background-color: #CCCCCC;
+	padding-left: 5px;
+	font-family: Arial, Helvetica, sans-serif;
 }
